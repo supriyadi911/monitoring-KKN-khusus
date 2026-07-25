@@ -391,7 +391,12 @@
                         <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
                             <div class="px-6 py-4 border-b bg-purple-50 flex justify-between items-center">
                                 <h3 class="font-bold text-purple-800"><i class="fa-solid fa-user-graduate mr-2"></i>Mahasiswa Belum Lapor</h3>
-                                <span id="badge-unreported-mhs" class="bg-purple-200 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-full">0</span>
+                                <div class="flex items-center space-x-2">
+                                    <button onclick="sendWhatsAppReminder()" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1 rounded flex items-center transition shadow-sm" title="Bagikan daftar ini ke WhatsApp">
+                                        <i class="fa-brands fa-whatsapp mr-1 text-sm"></i> Share WA
+                                    </button>
+                                    <span id="badge-unreported-mhs" class="bg-purple-200 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-full">0</span>
+                                </div>
                             </div>
                             <div class="p-4 max-h-64 overflow-y-auto bg-white">
                                 <ul id="list-unreported-mhs" class="space-y-1 text-sm text-gray-600">
@@ -745,6 +750,7 @@
         let currentPageMhs = 1;
         let currentPageAkun = 1;
         let itemsPerPage = 20;
+        let currentUnreportedMhs = [];
         
         let sortState = {
             Mhs: { col: 'tanggal', dir: 'desc' },
@@ -1685,6 +1691,7 @@
         }
 
         function updateUnreportedStatusUI(unreportedMhs, valTotalMhs) {
+            currentUnreportedMhs = unreportedMhs;
             // Kalkulasi Persentase "Belum Lapor"
             const pctUnmhs = valTotalMhs ? ((unreportedMhs.length / valTotalMhs) * 100).toFixed(1).replace('.', ',').replace(',0', '') : 0;
 
@@ -1703,6 +1710,36 @@
                 }
             }
             if (badgeMhs) badgeMhs.innerText = `${unreportedMhs.length} (${pctUnmhs}%)`;
+        }
+
+        function sendWhatsAppReminder() {
+            if (currentUnreportedMhs.length === 0) {
+                alert("Hebat! Semua mahasiswa sudah melapor pada tanggal tersebut.");
+                return;
+            }
+
+            const filterInput = document.querySelector('.global-date-input');
+            // Menangkap tanggal, atau menampilkan 'Hari ini'
+            const filterDate = filterInput && filterInput.value ? filterInput.value : 'Hari Ini';
+
+            // Menyusun format pesan pengingat WA
+            let message = `*PENGINGAT LAPORAN KKN*\n\n`;
+            message += `Berikut adalah daftar mahasiswa yang *BELUM* mengisi laporan harian pada tanggal *${filterDate}*:\n\n`;
+            
+            currentUnreportedMhs.forEach((m, index) => {
+                message += `${index + 1}. ${m.namaLengkap || m.username} (${m.kelompok || '-'})`;
+                if (m.kontak && m.kontak !== '-') {
+                     message += ` - WA: ${m.kontak}`;
+                }
+                message += `\n`;
+            });
+
+            message += `\nMohon untuk segera melengkapi laporan di SIM KKN. Terima kasih.`;
+
+            // Konversi pesan menjadi format URL (URL Encoding)
+            const encodedMessage = encodeURIComponent(message);
+            // Buka WhatsApp API
+            window.open(`https://api.whatsapp.com/send?text=${encodedMessage}`, '_blank');
         }
 
         function updateFilterKelompokMhsOptions() {
