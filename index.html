@@ -1736,6 +1736,22 @@
 
             message += `\nMohon untuk segera melengkapi laporan di SIM KKN. Terima kasih.`;
 
+            // Membuat timestamp real-time untuk keterangan update
+            const now = new Date();
+            const days = ['Minggu', 'Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu'];
+            const months = ['Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'];
+            
+            const dayName = days[now.getDay()];
+            const dayNum = now.getDate();
+            const monthName = months[now.getMonth()];
+            const year = now.getFullYear();
+            
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const seconds = String(now.getSeconds()).padStart(2, '0');
+            
+            message += `\n\n_Updated: ${dayName}, ${dayNum} ${monthName} ${year}, ${hours}:${minutes}:${seconds} WIB_`;
+
             // Konversi pesan menjadi format URL (URL Encoding)
             const encodedMessage = encodeURIComponent(message);
             // Buka WhatsApp API
