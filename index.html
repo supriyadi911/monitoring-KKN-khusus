@@ -95,7 +95,7 @@
                 
                 <img src="https://upload.wikimedia.org/wikipedia/id/thumb/3/3d/Lambang_UIN_Raden_Intan_Lampung.png/250px-Lambang_UIN_Raden_Intan_Lampung.png" alt="Logo UIN Raden Intan Lampung" class="h-24 w-auto mx-auto mb-4 object-contain">
                 <h1 class="text-3xl md:text-4xl font-extrabold text-gray-800 mb-2">Sistem Monitoring KKN</h1>
-                <p class="text-lg text-gray-600 mb-4">Selamat datang di portal informasi dan pelaporan harian Mahasiswa Kuliah Kerja Nyata (TEMATIK : PONPES, Mengajar, Dakwah Humanis dan Magang)</p>
+                <p class="text-lg text-gray-600 mb-4">Selamat datang di portal resmi Sistem Informasi Manajemen Kuliah Kerja Nyata (SIM KKN) Tematik. Layanan informasi dan pelaporan terpadu untuk program KKN Ponpes, Mengajar, Dakwah Humanis, serta Magang.</p>
                 
                 <!-- Tombol Masuk Ke Sistem -->
                 <div class="mt-6 flex justify-center">
@@ -125,6 +125,53 @@
                         </div>
                     </div>
                     <i class="fa-solid fa-file-signature text-4xl text-emerald-200"></i>
+                </div>
+            </div>
+
+            <!-- Statistik Kartu Tematik Publik (BARU) -->
+            <div class="max-w-4xl mx-auto mb-8">
+                <h3 class="font-bold text-gray-700 mb-3 mt-2 text-center md:text-left">Sebaran Mahasiswa KKN Tematik</h3>
+                <div class="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <!-- Ponpes -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 border-t-4 border-emerald-500 flex flex-col items-center text-center">
+                        <i class="fa-solid fa-mosque text-3xl text-emerald-100 mb-2"></i>
+                        <p class="text-xs text-gray-500 font-medium">Tematik Ponpes</p>
+                        <p class="text-2xl font-bold text-gray-800" id="pub-stat-ponpes">0</p>
+                        <div class="flex items-center space-x-1 mt-1">
+                            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded" id="pub-count-rep-ponpes">0 Lapor</span>
+                            <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded" id="pub-pct-ponpes">0%</span>
+                        </div>
+                    </div>
+                    <!-- Mengajar -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 border-t-4 border-blue-500 flex flex-col items-center text-center">
+                        <i class="fa-solid fa-chalkboard-user text-3xl text-blue-100 mb-2"></i>
+                        <p class="text-xs text-gray-500 font-medium">Tematik Mengajar</p>
+                        <p class="text-2xl font-bold text-gray-800" id="pub-stat-mengajar">0</p>
+                        <div class="flex items-center space-x-1 mt-1">
+                            <span class="text-[10px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded" id="pub-count-rep-mengajar">0 Lapor</span>
+                            <span class="text-[10px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded" id="pub-pct-mengajar">0%</span>
+                        </div>
+                    </div>
+                    <!-- Dakwah Humanis -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 border-t-4 border-purple-500 flex flex-col items-center text-center">
+                        <i class="fa-solid fa-hand-holding-heart text-3xl text-purple-100 mb-2"></i>
+                        <p class="text-xs text-gray-500 font-medium">Dakwah Humanis</p>
+                        <p class="text-2xl font-bold text-gray-800" id="pub-stat-dakwah">0</p>
+                        <div class="flex items-center space-x-1 mt-1">
+                            <span class="text-[10px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded" id="pub-count-rep-dakwah">0 Lapor</span>
+                            <span class="text-[10px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded" id="pub-pct-dakwah">0%</span>
+                        </div>
+                    </div>
+                    <!-- Magang -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 border-t-4 border-orange-500 flex flex-col items-center text-center">
+                        <i class="fa-solid fa-briefcase text-3xl text-orange-100 mb-2"></i>
+                        <p class="text-xs text-gray-500 font-medium">Tematik Magang</p>
+                        <p class="text-2xl font-bold text-gray-800" id="pub-stat-magang">0</p>
+                        <div class="flex items-center space-x-1 mt-1">
+                            <span class="text-[10px] font-bold text-orange-700 bg-orange-100 px-1.5 py-0.5 rounded" id="pub-count-rep-magang">0 Lapor</span>
+                            <span class="text-[10px] font-bold text-orange-700 bg-orange-100 px-1.5 py-0.5 rounded" id="pub-pct-magang">0%</span>
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -315,9 +362,27 @@
                     <button onclick="switchAdminTab('dashboard')" id="tab-btn-dashboard" class="w-full flex items-center px-4 py-3 bg-emerald-600 text-white rounded-lg transition font-medium shadow-sm">
                         <i class="fa-solid fa-chart-pie w-6 text-center"></i> Dashboard
                     </button>
-                    <button onclick="switchAdminTab('mahasiswa')" id="tab-btn-mahasiswa" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
-                        <i class="fa-solid fa-user-graduate w-6 text-center"></i> Laporan Mahasiswa
+                    
+                    <div class="pt-4 pb-1">
+                        <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Laporan Mahasiswa</p>
+                    </div>
+                    
+                    <button onclick="switchAdminTab('mahasiswa', 'PONPES')" id="tab-btn-mhs-ponpes" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
+                        <i class="fa-solid fa-mosque w-6 text-center"></i> Tematik Ponpes
                     </button>
+                    <button onclick="switchAdminTab('mahasiswa', 'MENGAJAR')" id="tab-btn-mhs-mengajar" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
+                        <i class="fa-solid fa-chalkboard-user w-6 text-center"></i> Tematik Mengajar
+                    </button>
+                    <button onclick="switchAdminTab('mahasiswa', 'DAKWAH')" id="tab-btn-mhs-dakwah" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
+                        <i class="fa-solid fa-hand-holding-heart w-6 text-center"></i> Dakwah Humanis
+                    </button>
+                    <button onclick="switchAdminTab('mahasiswa', 'MAGANG')" id="tab-btn-mhs-magang" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
+                        <i class="fa-solid fa-briefcase w-6 text-center"></i> Tematik Magang
+                    </button>
+
+                    <div class="pt-4 pb-1">
+                        <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pengaturan</p>
+                    </div>
                     <button onclick="switchAdminTab('akun')" id="tab-btn-akun" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
                         <i class="fa-solid fa-users-cog w-6 text-center"></i> Pengaturan Akun
                     </button>
@@ -375,6 +440,51 @@
                         </div>
                     </div>
 
+                    <!-- Statistik Kartu Tematik (BARU) -->
+                    <h3 class="font-bold text-gray-700 mb-3 mt-2">Sebaran Mahasiswa KKN Tematik</h3>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+                        <!-- Ponpes -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 border-t-4 border-emerald-500 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-mosque text-3xl text-emerald-100 mb-2"></i>
+                            <p class="text-xs text-gray-500 font-medium">Tematik Ponpes</p>
+                            <p class="text-2xl font-bold text-gray-800" id="stat-ponpes">0</p>
+                            <div class="flex items-center space-x-1 mt-1">
+                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded" id="count-rep-ponpes">0 Lapor</span>
+                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-1.5 py-0.5 rounded" id="pct-ponpes">0%</span>
+                            </div>
+                        </div>
+                        <!-- Mengajar -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 border-t-4 border-blue-500 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-chalkboard-user text-3xl text-blue-100 mb-2"></i>
+                            <p class="text-xs text-gray-500 font-medium">Tematik Mengajar</p>
+                            <p class="text-2xl font-bold text-gray-800" id="stat-mengajar">0</p>
+                            <div class="flex items-center space-x-1 mt-1">
+                                <span class="text-[10px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded" id="count-rep-mengajar">0 Lapor</span>
+                                <span class="text-[10px] font-bold text-blue-700 bg-blue-100 px-1.5 py-0.5 rounded" id="pct-mengajar">0%</span>
+                            </div>
+                        </div>
+                        <!-- Dakwah Humanis -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 border-t-4 border-purple-500 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-hand-holding-heart text-3xl text-purple-100 mb-2"></i>
+                            <p class="text-xs text-gray-500 font-medium">Dakwah Humanis</p>
+                            <p class="text-2xl font-bold text-gray-800" id="stat-dakwah">0</p>
+                            <div class="flex items-center space-x-1 mt-1">
+                                <span class="text-[10px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded" id="count-rep-dakwah">0 Lapor</span>
+                                <span class="text-[10px] font-bold text-purple-700 bg-purple-100 px-1.5 py-0.5 rounded" id="pct-dakwah">0%</span>
+                            </div>
+                        </div>
+                        <!-- Magang -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 border-t-4 border-orange-500 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-briefcase text-3xl text-orange-100 mb-2"></i>
+                            <p class="text-xs text-gray-500 font-medium">Tematik Magang</p>
+                            <p class="text-2xl font-bold text-gray-800" id="stat-magang">0</p>
+                            <div class="flex items-center space-x-1 mt-1">
+                                <span class="text-[10px] font-bold text-orange-700 bg-orange-100 px-1.5 py-0.5 rounded" id="count-rep-magang">0 Lapor</span>
+                                <span class="text-[10px] font-bold text-orange-700 bg-orange-100 px-1.5 py-0.5 rounded" id="pct-magang">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Grafik Distribusi -->
                     <div class="bg-white rounded-lg shadow-sm p-6 border mb-8">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
@@ -386,22 +496,69 @@
                     </div>
 
                     <!-- Kartu Info Belum Lapor (Mahasiswa) -->
-                    <div class="grid grid-cols-1 md:grid-cols-1 gap-6 mb-8 max-w-2xl">
-                        <!-- Mahasiswa Belum Lapor -->
-                        <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
-                            <div class="px-6 py-4 border-b bg-purple-50 flex justify-between items-center">
-                                <h3 class="font-bold text-purple-800"><i class="fa-solid fa-user-graduate mr-2"></i>Mahasiswa Belum Lapor</h3>
-                                <div class="flex items-center space-x-2">
-                                    <button onclick="sendWhatsAppReminder()" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1 rounded flex items-center transition shadow-sm" title="Bagikan daftar ini ke WhatsApp">
-                                        <i class="fa-brands fa-whatsapp mr-1 text-sm"></i> Share WA
-                                    </button>
-                                    <span id="badge-unreported-mhs" class="bg-purple-200 text-purple-800 text-xs font-bold px-2.5 py-1 rounded-full">0</span>
+                    <div class="mb-8">
+                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 mt-8 gap-2">
+                            <h3 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-user-clock mr-2 text-emerald-600"></i>Daftar Mahasiswa Belum Lapor</h3>
+                            <div class="flex items-center space-x-2">
+                                <span class="text-sm font-medium text-gray-500 bg-gray-200 px-3 py-1 rounded-full" id="badge-unreported-mhs-total">Total: 0</span>
+                                <button onclick="sendWhatsAppReminder('ALL')" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded flex items-center transition shadow-sm" title="Bagikan semua daftar ke WhatsApp">
+                                    <i class="fa-brands fa-whatsapp mr-1 text-sm"></i> Share Semua ke WA
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+                            <!-- Ponpes -->
+                            <div class="bg-white rounded-lg shadow-sm border border-emerald-100 overflow-hidden flex flex-col">
+                                <div class="px-4 py-3 border-b bg-emerald-50 flex justify-between items-center">
+                                    <h4 class="font-bold text-emerald-800 text-sm"><i class="fa-solid fa-mosque mr-1"></i> Ponpes</h4>
+                                    <div class="flex items-center space-x-2">
+                                        <button onclick="sendWhatsAppReminder('PONPES')" class="text-green-600 hover:text-green-700 transition" title="Share WA Ponpes"><i class="fa-brands fa-whatsapp text-lg"></i></button>
+                                        <span id="badge-unrep-ponpes" class="bg-emerald-200 text-emerald-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 flex-1 max-h-60 overflow-y-auto bg-white">
+                                    <ul id="list-unrep-ponpes" class="space-y-1 text-sm text-gray-600"></ul>
                                 </div>
                             </div>
-                            <div class="p-4 max-h-64 overflow-y-auto bg-white">
-                                <ul id="list-unreported-mhs" class="space-y-1 text-sm text-gray-600">
-                                    <!-- Data diinjeksi via JS -->
-                                </ul>
+                            <!-- Mengajar -->
+                            <div class="bg-white rounded-lg shadow-sm border border-blue-100 overflow-hidden flex flex-col">
+                                <div class="px-4 py-3 border-b bg-blue-50 flex justify-between items-center">
+                                    <h4 class="font-bold text-blue-800 text-sm"><i class="fa-solid fa-chalkboard-user mr-1"></i> Mengajar</h4>
+                                    <div class="flex items-center space-x-2">
+                                        <button onclick="sendWhatsAppReminder('MENGAJAR')" class="text-green-600 hover:text-green-700 transition" title="Share WA Mengajar"><i class="fa-brands fa-whatsapp text-lg"></i></button>
+                                        <span id="badge-unrep-mengajar" class="bg-blue-200 text-blue-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 flex-1 max-h-60 overflow-y-auto bg-white">
+                                    <ul id="list-unrep-mengajar" class="space-y-1 text-sm text-gray-600"></ul>
+                                </div>
+                            </div>
+                            <!-- Dakwah -->
+                            <div class="bg-white rounded-lg shadow-sm border border-purple-100 overflow-hidden flex flex-col">
+                                <div class="px-4 py-3 border-b bg-purple-50 flex justify-between items-center">
+                                    <h4 class="font-bold text-purple-800 text-sm"><i class="fa-solid fa-hand-holding-heart mr-1"></i> Dakwah Humanis</h4>
+                                    <div class="flex items-center space-x-2">
+                                        <button onclick="sendWhatsAppReminder('DAKWAH')" class="text-green-600 hover:text-green-700 transition" title="Share WA Dakwah"><i class="fa-brands fa-whatsapp text-lg"></i></button>
+                                        <span id="badge-unrep-dakwah" class="bg-purple-200 text-purple-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 flex-1 max-h-60 overflow-y-auto bg-white">
+                                    <ul id="list-unrep-dakwah" class="space-y-1 text-sm text-gray-600"></ul>
+                                </div>
+                            </div>
+                            <!-- Magang -->
+                            <div class="bg-white rounded-lg shadow-sm border border-orange-100 overflow-hidden flex flex-col">
+                                <div class="px-4 py-3 border-b bg-orange-50 flex justify-between items-center">
+                                    <h4 class="font-bold text-orange-800 text-sm"><i class="fa-solid fa-briefcase mr-1"></i> Magang</h4>
+                                    <div class="flex items-center space-x-2">
+                                        <button onclick="sendWhatsAppReminder('MAGANG')" class="text-green-600 hover:text-green-700 transition" title="Share WA Magang"><i class="fa-brands fa-whatsapp text-lg"></i></button>
+                                        <span id="badge-unrep-magang" class="bg-orange-200 text-orange-800 text-xs font-bold px-2 py-0.5 rounded-full">0</span>
+                                    </div>
+                                </div>
+                                <div class="p-3 flex-1 max-h-60 overflow-y-auto bg-white">
+                                    <ul id="list-unrep-magang" class="space-y-1 text-sm text-gray-600"></ul>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -412,7 +569,7 @@
                 ------------------------------------------ -->
                 <div id="admin-tab-mahasiswa" class="hidden space-y-6">
                     <div class="flex justify-between items-center mb-6">
-                        <h1 class="text-2xl font-bold text-gray-800">Manajemen Laporan Mahasiswa</h1>
+                        <h1 id="admin-mhs-page-title" class="text-2xl font-bold text-gray-800">Manajemen Laporan Mahasiswa</h1>
                     </div>
 
                     <!-- Filter Data Global (Mahasiswa) -->
@@ -436,11 +593,6 @@
                                 <i class="fa-solid fa-search text-gray-400"></i>
                             </div>
                             <input type="text" id="search-mhs" onkeyup="applyAdminMhsFilters()" placeholder="Cari nama, kelompok, kegiatan..." class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm shadow-sm">
-                        </div>
-                        <div class="w-full sm:w-48">
-                            <select id="filter-kelompok-mhs" onchange="applyAdminMhsFilters()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm text-gray-700">
-                                <option value="">Semua Kelompok</option>
-                            </select>
                         </div>
                         <div class="w-full sm:w-56">
                             <select id="filter-jenis-mhs" onchange="applyAdminMhsFilters()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm text-gray-700">
@@ -751,6 +903,7 @@
         let currentPageAkun = 1;
         let itemsPerPage = 20;
         let currentUnreportedMhs = [];
+        let currentAdminMhsTheme = 'ALL';
         
         let sortState = {
             Mhs: { col: 'tanggal', dir: 'desc' },
@@ -1148,8 +1301,6 @@
                     setConnectionStatus('online');
                 }
 
-                updateFilterKelompokMhsOptions();
-
                 if (!currentUser) {
                     renderPublicDashboard();
                 } else {
@@ -1180,8 +1331,9 @@
         // TAMPILAN DASHBOARD UMUM & ADMIN
         // =========================================================================
 
-        function switchAdminTab(tabId) {
+        function switchAdminTab(tabId, theme = 'ALL') {
             const tabs = ['dashboard', 'mahasiswa', 'akun'];
+            const buttons = ['dashboard', 'mhs-ponpes', 'mhs-mengajar', 'mhs-dakwah', 'mhs-magang', 'akun'];
             
             tabs.forEach(t => {
                 const content = document.getElementById('admin-tab-' + t);
@@ -1189,10 +1341,17 @@
                     if (t === tabId) content.classList.remove('hidden');
                     else content.classList.add('hidden');
                 }
-                
-                const btn = document.getElementById('tab-btn-' + t);
+            });
+            
+            buttons.forEach(b => {
+                const btn = document.getElementById('tab-btn-' + b);
                 if (btn) {
-                    if (t === tabId) {
+                    let isActive = false;
+                    if (tabId === 'dashboard' && b === 'dashboard') isActive = true;
+                    if (tabId === 'akun' && b === 'akun') isActive = true;
+                    if (tabId === 'mahasiswa' && b === 'mhs-' + theme.toLowerCase()) isActive = true;
+
+                    if (isActive) {
                         btn.className = 'w-full flex items-center px-4 py-3 bg-emerald-600 text-white rounded-lg transition font-medium shadow-sm';
                     } else {
                         btn.className = 'w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium';
@@ -1200,6 +1359,20 @@
                 }
             });
             
+            if (tabId === 'mahasiswa') {
+                currentAdminMhsTheme = theme;
+                const titles = {
+                    'PONPES': 'Laporan KKN Tematik Ponpes',
+                    'MENGAJAR': 'Laporan KKN Tematik Mengajar',
+                    'DAKWAH': 'Laporan KKN Dakwah Humanis',
+                    'MAGANG': 'Laporan KKN Tematik Magang',
+                };
+                const titleEl = document.getElementById('admin-mhs-page-title');
+                if (titleEl) titleEl.innerText = titles[theme] || 'Manajemen Laporan Mahasiswa';
+
+                applyAdminMhsFilters();
+            }
+
             if (tabId === 'akun') {
                 const adminAkunTableBody = document.getElementById('admin-akun-table-body');
                 if (adminAkunTableBody) {
@@ -1542,15 +1715,50 @@
             if (elStatMhs) elStatMhs.innerText = fMhs.length;
 
             // Hitung Total Akun Terdaftar
-            const allMhs = accountsData.filter(a => a.role === 'mahasiswa').length;
-            if (elStatMhsTotal) elStatMhsTotal.innerText = allMhs;
+            const allMhsList = accountsData.filter(a => a.role === 'mahasiswa');
+            const totalAllMhs = allMhsList.length || (USE_MOCK ? 1 : 0);
+            if (elStatMhsTotal) elStatMhsTotal.innerText = totalAllMhs;
 
             // Hitung Jumlah Akun Unik yang Sudah Melapor
-            const reportedMhs = new Set(fMhs.map(r => r.username)).size;
+            const reportedMhsUsernames = new Set(fMhs.map(r => r.username));
+            const reportedMhsList = allMhsList.filter(m => reportedMhsUsernames.has(m.username));
 
             // Kalkulasi Persentase
-            const pctMhs = allMhs ? ((reportedMhs / allMhs) * 100).toFixed(1).replace('.', ',').replace(',0', '') : 0;
+            const pctMhs = totalAllMhs ? ((reportedMhsList.length / totalAllMhs) * 100).toFixed(1).replace('.', ',').replace(',0', '') : 0;
             if (elPctMhs) elPctMhs.innerText = `${pctMhs}% Lapor`;
+
+            // Kalkulasi Kartu Tematik Publik
+            const isPonpes = k => (k || '').toUpperCase().includes('PONPES');
+            const isMengajar = k => (k || '').toUpperCase().includes('MENGAJAR');
+            const isDakwah = k => (k || '').toUpperCase().includes('DAKWAH');
+            const isMagang = k => (k || '').toUpperCase().includes('MAGANG');
+
+            const allPonpes = allMhsList.filter(m => isPonpes(m.kelompok));
+            const allMengajar = allMhsList.filter(m => isMengajar(m.kelompok));
+            const allDakwah = allMhsList.filter(m => isDakwah(m.kelompok));
+            const allMagang = allMhsList.filter(m => isMagang(m.kelompok));
+
+            const repPonpes = reportedMhsList.filter(m => isPonpes(m.kelompok));
+            const repMengajar = reportedMhsList.filter(m => isMengajar(m.kelompok));
+            const repDakwah = reportedMhsList.filter(m => isDakwah(m.kelompok));
+            const repMagang = reportedMhsList.filter(m => isMagang(m.kelompok));
+
+            const updatePubThemeUI = (id, totalArr, repArr) => {
+                const elTotal = document.getElementById(`pub-stat-${id}`);
+                const elRep = document.getElementById(`pub-count-rep-${id}`);
+                const elPct = document.getElementById(`pub-pct-${id}`);
+                
+                const pct = totalArr.length ? ((repArr.length / totalArr.length) * 100).toFixed(1).replace('.0', '') : 0;
+                
+                if (elTotal) elTotal.innerText = totalArr.length;
+                if (elRep) elRep.innerText = `${repArr.length} Lapor`;
+                if (elPct) elPct.innerText = `${pct}%`;
+            };
+
+            updatePubThemeUI('ponpes', allPonpes, repPonpes);
+            updatePubThemeUI('mengajar', allMengajar, repMengajar);
+            updatePubThemeUI('dakwah', allDakwah, repDakwah);
+            updatePubThemeUI('magang', allMagang, repMagang);
 
             renderPublicMultiChart(fMhs);
         }
@@ -1567,19 +1775,33 @@
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
             
-            const counts = { mhs: {} };
+            // Siapkan penampung data untuk tiap tematik
+            const counts = { ponpes: {}, mengajar: {}, dakwah: {}, magang: {}, reguler: {} };
             const allDates = new Set();
 
-            dataMhs.forEach(r => { counts.mhs[r.tanggal] = (counts.mhs[r.tanggal] || 0) + 1; allDates.add(r.tanggal); });
+            dataMhs.forEach(r => { 
+                const d = r.tanggal;
+                allDates.add(d);
+                
+                const k = (r.kelompok || '').toUpperCase();
+                if (k.includes('PONPES')) counts.ponpes[d] = (counts.ponpes[d] || 0) + 1;
+                else if (k.includes('MENGAJAR')) counts.mengajar[d] = (counts.mengajar[d] || 0) + 1;
+                else if (k.includes('DAKWAH')) counts.dakwah[d] = (counts.dakwah[d] || 0) + 1;
+                else if (k.includes('MAGANG')) counts.magang[d] = (counts.magang[d] || 0) + 1;
+                else counts.reguler[d] = (counts.reguler[d] || 0) + 1; // Kelompok biasa (non-tematik)
+            });
 
             const labels = Array.from(allDates).sort();
-            const valMhs = labels.map(d => counts.mhs[d] || 0);
             
-            const datasets = [{
-                label: 'Laporan Mahasiswa', data: valMhs,
-                backgroundColor: 'rgba(168, 85, 247, 0.2)', borderColor: 'rgba(168, 85, 247, 1)',
-                borderWidth: 2, tension: 0.3, fill: true, pointRadius: 4, pointBackgroundColor: 'rgba(168, 85, 247, 1)'
-            }];
+            // Konfigurasi garis per kelompok
+            const dsPonpes = { label: 'Ponpes', data: labels.map(d => counts.ponpes[d] || 0), borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3, borderWidth: 2, pointRadius: 3 };
+            const dsMengajar = { label: 'Mengajar', data: labels.map(d => counts.mengajar[d] || 0), borderColor: '#3b82f6', backgroundColor: '#3b82f6', tension: 0.3, borderWidth: 2, pointRadius: 3 };
+            const dsDakwah = { label: 'Dakwah Humanis', data: labels.map(d => counts.dakwah[d] || 0), borderColor: '#a855f7', backgroundColor: '#a855f7', tension: 0.3, borderWidth: 2, pointRadius: 3 };
+            const dsMagang = { label: 'Magang', data: labels.map(d => counts.magang[d] || 0), borderColor: '#f97316', backgroundColor: '#f97316', tension: 0.3, borderWidth: 2, pointRadius: 3 };
+            const dsReguler = { label: 'Reguler/Lainnya', data: labels.map(d => counts.reguler[d] || 0), borderColor: '#6b7280', backgroundColor: '#6b7280', tension: 0.3, borderWidth: 2, pointRadius: 3, borderDash: [5, 5] };
+
+            // Hanya tampilkan dataset yang ada laporannya
+            const datasets = [dsPonpes, dsMengajar, dsDakwah, dsMagang, dsReguler].filter(ds => ds.data.some(v => v > 0));
 
             if (publicChartInstance) publicChartInstance.destroy();
 
@@ -1592,6 +1814,7 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
+                    interaction: { mode: 'index', intersect: false }, // Tooltip gabungan
                     scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } 
                 }
             });
@@ -1607,19 +1830,33 @@
             const ctx = canvas.getContext('2d');
             if (!ctx) return;
             
-            const counts = { mhs: {} };
+            // Siapkan penampung data untuk tiap tematik
+            const counts = { ponpes: {}, mengajar: {}, dakwah: {}, magang: {}, reguler: {} };
             const allDates = new Set();
 
-            dataMhs.forEach(r => { counts.mhs[r.tanggal] = (counts.mhs[r.tanggal] || 0) + 1; allDates.add(r.tanggal); });
+            dataMhs.forEach(r => { 
+                const d = r.tanggal;
+                allDates.add(d);
+                
+                const k = (r.kelompok || '').toUpperCase();
+                if (k.includes('PONPES')) counts.ponpes[d] = (counts.ponpes[d] || 0) + 1;
+                else if (k.includes('MENGAJAR')) counts.mengajar[d] = (counts.mengajar[d] || 0) + 1;
+                else if (k.includes('DAKWAH')) counts.dakwah[d] = (counts.dakwah[d] || 0) + 1;
+                else if (k.includes('MAGANG')) counts.magang[d] = (counts.magang[d] || 0) + 1;
+                else counts.reguler[d] = (counts.reguler[d] || 0) + 1; // Kelompok biasa (non-tematik)
+            });
 
             const labels = Array.from(allDates).sort();
-            const valMhs = labels.map(d => counts.mhs[d] || 0);
             
-            const datasets = [{
-                label: 'Laporan Mahasiswa', data: valMhs,
-                backgroundColor: 'rgba(168, 85, 247, 0.2)', borderColor: 'rgba(168, 85, 247, 1)',
-                borderWidth: 2, tension: 0.3, fill: true, pointRadius: 4, pointBackgroundColor: 'rgba(168, 85, 247, 1)'
-            }];
+            // Konfigurasi garis per kelompok
+            const dsPonpes = { label: 'Ponpes', data: labels.map(d => counts.ponpes[d] || 0), borderColor: '#10b981', backgroundColor: '#10b981', tension: 0.3, borderWidth: 2, pointRadius: 3 };
+            const dsMengajar = { label: 'Mengajar', data: labels.map(d => counts.mengajar[d] || 0), borderColor: '#3b82f6', backgroundColor: '#3b82f6', tension: 0.3, borderWidth: 2, pointRadius: 3 };
+            const dsDakwah = { label: 'Dakwah Humanis', data: labels.map(d => counts.dakwah[d] || 0), borderColor: '#a855f7', backgroundColor: '#a855f7', tension: 0.3, borderWidth: 2, pointRadius: 3 };
+            const dsMagang = { label: 'Magang', data: labels.map(d => counts.magang[d] || 0), borderColor: '#f97316', backgroundColor: '#f97316', tension: 0.3, borderWidth: 2, pointRadius: 3 };
+            const dsReguler = { label: 'Reguler/Lainnya', data: labels.map(d => counts.reguler[d] || 0), borderColor: '#6b7280', backgroundColor: '#6b7280', tension: 0.3, borderWidth: 2, pointRadius: 3, borderDash: [5, 5] };
+
+            // Hanya tampilkan dataset yang ada laporannya
+            const datasets = [dsPonpes, dsMengajar, dsDakwah, dsMagang, dsReguler].filter(ds => ds.data.some(v => v > 0));
 
             if (adminChartInstance) adminChartInstance.destroy();
 
@@ -1632,6 +1869,7 @@
                 options: { 
                     responsive: true, 
                     maintainAspectRatio: false, 
+                    interaction: { mode: 'index', intersect: false }, // Tooltip gabungan
                     scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } } 
                 }
             });
@@ -1685,6 +1923,42 @@
             const elRepMhs = document.getElementById('stat-rep-mhs');
             if (elRepMhs) elRepMhs.innerText = globalMhs.length;
 
+            // 7.5 Update Total KKN Tematik & Status Lapornya (BARU)
+            const isPonpes = k => (k || '').toUpperCase().includes('PONPES');
+            const isMengajar = k => (k || '').toUpperCase().includes('MENGAJAR');
+            const isDakwah = k => (k || '').toUpperCase().includes('DAKWAH');
+            const isMagang = k => (k || '').toUpperCase().includes('MAGANG');
+
+            // Hitung Total Akun
+            const allPonpes = allMhs.filter(m => isPonpes(m.kelompok));
+            const allMengajar = allMhs.filter(m => isMengajar(m.kelompok));
+            const allDakwah = allMhs.filter(m => isDakwah(m.kelompok));
+            const allMagang = allMhs.filter(m => isMagang(m.kelompok));
+
+            // Hitung Akun yang sudah lapor
+            const repPonpes = reportedMhs.filter(m => isPonpes(m.kelompok));
+            const repMengajar = reportedMhs.filter(m => isMengajar(m.kelompok));
+            const repDakwah = reportedMhs.filter(m => isDakwah(m.kelompok));
+            const repMagang = reportedMhs.filter(m => isMagang(m.kelompok));
+
+            // Helper Fungsi Update UI Kartu Tematik
+            const updateThemeUI = (id, totalArr, repArr) => {
+                const elTotal = document.getElementById(`stat-${id}`);
+                const elRep = document.getElementById(`count-rep-${id}`);
+                const elPct = document.getElementById(`pct-${id}`);
+                
+                const pct = totalArr.length ? ((repArr.length / totalArr.length) * 100).toFixed(1).replace('.0', '') : 0;
+                
+                if (elTotal) elTotal.innerText = totalArr.length;
+                if (elRep) elRep.innerText = `${repArr.length} Lapor`;
+                if (elPct) elPct.innerText = `${pct}%`;
+            };
+
+            updateThemeUI('ponpes', allPonpes, repPonpes);
+            updateThemeUI('mengajar', allMengajar, repMengajar);
+            updateThemeUI('dakwah', allDakwah, repDakwah);
+            updateThemeUI('magang', allMagang, repMagang);
+
             // 8. Update UI "Belum Lapor" dan Grafik
             updateUnreportedStatusUI(unreportedMhs, valTotalMhs);
             renderAdminMultiChart(globalMhs);
@@ -1695,26 +1969,66 @@
             // Kalkulasi Persentase "Belum Lapor"
             const pctUnmhs = valTotalMhs ? ((unreportedMhs.length / valTotalMhs) * 100).toFixed(1).replace('.', ',').replace(',0', '') : 0;
 
-            // Update UI Daftar & Badge Mahasiswa Belum Lapor
-            const listMhs = document.getElementById('list-unreported-mhs');
-            const badgeMhs = document.getElementById('badge-unreported-mhs');
-            if (listMhs) {
-                if (unreportedMhs.length === 0) {
-                    listMhs.innerHTML = '<li class="text-green-600 text-center py-6 font-medium"><i class="fa-solid fa-check-circle mr-1 text-lg block mb-1"></i> Semua mahasiswa telah melapor</li>';
-                } else {
-                    listMhs.innerHTML = unreportedMhs.map(m => `
-                        <li class="flex items-center justify-between p-2.5 hover:bg-gray-50 rounded-lg border border-transparent hover:border-gray-100 transition">
-                            <span class="font-semibold text-gray-800">${m.namaLengkap || m.username}</span>
-                            <span class="text-xs text-gray-400 bg-gray-100 px-2 py-1 rounded">@${m.username}</span>
-                        </li>`).join('');
+            const isPonpes = k => (k || '').toUpperCase().includes('PONPES');
+            const isMengajar = k => (k || '').toUpperCase().includes('MENGAJAR');
+            const isDakwah = k => (k || '').toUpperCase().includes('DAKWAH');
+            const isMagang = k => (k || '').toUpperCase().includes('MAGANG');
+
+            const unrepPonpes = unreportedMhs.filter(m => isPonpes(m.kelompok));
+            const unrepMengajar = unreportedMhs.filter(m => isMengajar(m.kelompok));
+            const unrepDakwah = unreportedMhs.filter(m => isDakwah(m.kelompok));
+            const unrepMagang = unreportedMhs.filter(m => isMagang(m.kelompok));
+
+            // Update Total Badge Global
+            const badgeMhsTotal = document.getElementById('badge-unreported-mhs-total');
+            if (badgeMhsTotal) badgeMhsTotal.innerText = `Total: ${unreportedMhs.length} (${pctUnmhs}%)`;
+
+            // Fungsi render list masing-masing kartu
+            const renderList = (id, arr) => {
+                const listContainer = document.getElementById(`list-unrep-${id}`);
+                const badge = document.getElementById(`badge-unrep-${id}`);
+                
+                if (badge) badge.innerText = arr.length;
+                if (listContainer) {
+                    if (arr.length === 0) {
+                        listContainer.innerHTML = '<li class="text-green-600 text-center py-6 font-medium text-xs"><i class="fa-solid fa-check-circle mr-1 text-sm block mb-1"></i> Semua tuntas melapor</li>';
+                    } else {
+                        listContainer.innerHTML = arr.map(m => `
+                            <li class="flex flex-col p-2 hover:bg-gray-50 rounded border-b border-gray-50 last:border-0 transition">
+                                <span class="font-semibold text-gray-800 text-xs">${m.namaLengkap || m.username}</span>
+                                <div class="flex justify-between items-center mt-0.5">
+                                    <span class="text-[10px] text-gray-500 truncate max-w-[120px]">${m.kelompok || '-'}</span>
+                                    <span class="text-[10px] text-gray-400 bg-gray-100 px-1.5 py-0.5 rounded">@${m.username}</span>
+                                </div>
+                            </li>`).join('');
+                    }
                 }
-            }
-            if (badgeMhs) badgeMhs.innerText = `${unreportedMhs.length} (${pctUnmhs}%)`;
+            };
+
+            renderList('ponpes', unrepPonpes);
+            renderList('mengajar', unrepMengajar);
+            renderList('dakwah', unrepDakwah);
+            renderList('magang', unrepMagang);
         }
 
-        function sendWhatsAppReminder() {
-            if (currentUnreportedMhs.length === 0) {
-                alert("Hebat! Semua mahasiswa sudah melapor pada tanggal tersebut.");
+        function sendWhatsAppReminder(theme = 'ALL') {
+            const isPonpes = k => (k || '').toUpperCase().includes('PONPES');
+            const isMengajar = k => (k || '').toUpperCase().includes('MENGAJAR');
+            const isDakwah = k => (k || '').toUpperCase().includes('DAKWAH');
+            const isMagang = k => (k || '').toUpperCase().includes('MAGANG');
+
+            let targetMhs = [];
+            let themeTitle = "SEMUA KELOMPOK";
+
+            // Saring targetMhs sesuai parameter theme
+            if (theme === 'ALL') { targetMhs = currentUnreportedMhs; themeTitle = "SEMUA KELOMPOK"; }
+            else if (theme === 'PONPES') { targetMhs = currentUnreportedMhs.filter(m => isPonpes(m.kelompok)); themeTitle = "KKN TEMATIK PONPES"; }
+            else if (theme === 'MENGAJAR') { targetMhs = currentUnreportedMhs.filter(m => isMengajar(m.kelompok)); themeTitle = "KKN TEMATIK MENGAJAR"; }
+            else if (theme === 'DAKWAH') { targetMhs = currentUnreportedMhs.filter(m => isDakwah(m.kelompok)); themeTitle = "KKN TEMATIK DAKWAH HUMANIS"; }
+            else if (theme === 'MAGANG') { targetMhs = currentUnreportedMhs.filter(m => isMagang(m.kelompok)); themeTitle = "KKN TEMATIK MAGANG"; }
+
+            if (targetMhs.length === 0) {
+                alert(`Hebat! Mahasiswa pada kategori ${themeTitle} sudah melapor semua pada tanggal tersebut.`);
                 return;
             }
 
@@ -1724,17 +2038,38 @@
 
             // Menyusun format pesan pengingat WA
             let message = `*PENGINGAT LAPORAN KKN*\n\n`;
-            message += `Berikut adalah daftar mahasiswa yang *BELUM* mengisi laporan harian pada tanggal *${filterDate}*:\n\n`;
+            message += `Berikut adalah daftar mahasiswa kategori *${themeTitle}* yang *BELUM* mengisi laporan harian pada tanggal *${filterDate}*:\n\n`;
             
-            currentUnreportedMhs.forEach((m, index) => {
-                message += `${index + 1}. ${m.namaLengkap || m.username} (${m.kelompok || '-'})`;
-                if (m.kontak && m.kontak !== '-') {
-                     message += ` - WA: ${m.kontak}`;
-                }
-                message += `\n`;
-            });
+            const buildWAMessage = (arr) => {
+                let msg = '';
+                arr.forEach((m, index) => {
+                    msg += `${index + 1}. ${m.namaLengkap || m.username} (${m.kelompok || '-'})`;
+                    if (m.kontak && m.kontak !== '-') {
+                         msg += ` - WA: ${m.kontak}`;
+                    }
+                    msg += `\n`;
+                });
+                return msg;
+            };
 
-            message += `\nMohon untuk segera melengkapi laporan di SIM KKN. Terima kasih.`;
+            if (theme === 'ALL') {
+                // Jika ALL, pisahkan per section
+                const unrepPonpes = targetMhs.filter(m => isPonpes(m.kelompok));
+                const unrepMengajar = targetMhs.filter(m => isMengajar(m.kelompok));
+                const unrepDakwah = targetMhs.filter(m => isDakwah(m.kelompok));
+                const unrepMagang = targetMhs.filter(m => isMagang(m.kelompok));
+
+                const appendSect = (t, arr) => { if(arr.length > 0) message += `*${t}* (${arr.length} Orang)\n${buildWAMessage(arr)}\n`; };
+                appendSect('KKN TEMATIK PONPES', unrepPonpes);
+                appendSect('KKN TEMATIK MENGAJAR', unrepMengajar);
+                appendSect('KKN TEMATIK DAKWAH HUMANIS', unrepDakwah);
+                appendSect('KKN TEMATIK MAGANG', unrepMagang);
+            } else {
+                // Jika spesifik, cetak langsung
+                message += buildWAMessage(targetMhs) + `\n`;
+            }
+
+            message += `Mohon untuk segera melengkapi laporan di SIM KKN. Terima kasih.`;
 
             // Membuat timestamp real-time untuk keterangan update
             const now = new Date();
@@ -1758,34 +2093,18 @@
             window.open(`https://api.whatsapp.com/send?text=${encodedMessage}`, '_blank');
         }
 
-        function updateFilterKelompokMhsOptions() {
-            const selectEl = document.getElementById('filter-kelompok-mhs');
-            if (!selectEl) return;
-            const currentVal = selectEl.value;
-            // Dapatkan daftar nama kelompok yang unik dari data laporan
-            const kelompokList = [...new Set(mahasiswaReportsData.map(r => r.kelompok).filter(k => k && k !== '-'))].sort();
-            
-            selectEl.innerHTML = '<option value="">Semua Kelompok</option>';
-            kelompokList.forEach(k => {
-                const opt = document.createElement('option');
-                opt.value = k;
-                opt.innerText = k;
-                selectEl.appendChild(opt);
-            });
-            // Pertahankan nilai filter yang sedang dipilih jika ada
-            if (kelompokList.includes(currentVal)) {
-                selectEl.value = currentVal;
-            }
-        }
-
         function applyAdminMhsFilters() {
             const filterInput = document.querySelector('.global-date-input');
             const filterDate = filterInput ? filterInput.value : '';
             const searchTxt = document.getElementById('search-mhs') ? document.getElementById('search-mhs').value.toLowerCase() : '';
             const filterJenis = document.getElementById('filter-jenis-mhs') ? document.getElementById('filter-jenis-mhs').value : '';
-            const filterKelompok = document.getElementById('filter-kelompok-mhs') ? document.getElementById('filter-kelompok-mhs').value : '';
 
             filteredDataMhs = mahasiswaReportsData;
+
+            // Terapkan Filter Berdasarkan Tema Sidebar Menu
+            if (currentAdminMhsTheme !== 'ALL') {
+                filteredDataMhs = filteredDataMhs.filter(r => (r.kelompok || '').toUpperCase().includes(currentAdminMhsTheme));
+            }
 
             if (filterDate) filteredDataMhs = filteredDataMhs.filter(r => r.tanggal === filterDate);
             
@@ -1799,9 +2118,6 @@
             if (filterJenis) {
                 filteredDataMhs = filteredDataMhs.filter(r => r.rencana === filterJenis);
             }
-            if (filterKelompok) {
-                filteredDataMhs = filteredDataMhs.filter(r => r.kelompok === filterKelompok);
-            }
 
             currentPageMhs = 1;
             renderAdminTableMahasiswa(filteredDataMhs);
@@ -1812,7 +2128,6 @@
             
             if (document.getElementById('search-mhs')) document.getElementById('search-mhs').value = '';
             if (document.getElementById('filter-jenis-mhs')) document.getElementById('filter-jenis-mhs').value = '';
-            if (document.getElementById('filter-kelompok-mhs')) document.getElementById('filter-kelompok-mhs').value = '';
             
             if (document.getElementById('search-akun')) document.getElementById('search-akun').value = '';
             if (document.getElementById('filter-role-akun')) document.getElementById('filter-role-akun').value = '';
