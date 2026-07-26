@@ -883,9 +883,30 @@
     <!-- JAVASCRIPT LOGIC -->
     <script>
         // =========================================================================
-        // PENGATURAN API GOOGLE APPS SCRIPT (GAS)
+        // PENGAMANAN FRONTEND (ANTI-INSPECT & OBFUSCATION)
         // =========================================================================
-        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby_RFomlggYu2UmeQfE7wM2SRaXQJI3qGmbEJDIXNknT2aF-Kjau32LZbgL6LCO9BE5Lg/exec'; 
+        // 1. Memblokir Klik Kanan
+        document.addEventListener('contextmenu', function(e) {
+            e.preventDefault();
+        });
+
+        // 2. Memblokir shortcut keyboard Developer Tools (F12, Ctrl+Shift+I, Ctrl+U, dll)
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'F12' || 
+               (e.ctrlKey && e.shiftKey && (e.key === 'I' || e.key === 'i' || e.key === 'J' || e.key === 'j' || e.key === 'C' || e.key === 'c')) ||
+               (e.ctrlKey && (e.key === 'U' || e.key === 'u'))) {
+                e.preventDefault();
+                return false;
+            }
+        });
+
+        // =========================================================================
+        // PENGATURAN API GOOGLE APPS SCRIPT (GAS) - TERENKRIPSI
+        // =========================================================================
+        // URL disandikan dalam bentuk array byte agar tidak bisa dibaca langsung (Anti-Copas)
+        function _decodeUrl(arr) { return String.fromCharCode(...arr); }
+        const _secureUrl = [104,116,116,112,115,58,47,47,115,99,114,105,112,116,46,103,111,111,103,108,101,46,99,111,109,47,109,97,99,114,111,115,47,115,47,65,75,102,121,99,98,121,95,82,70,111,109,108,103,103,89,117,50,85,109,101,81,102,69,55,119,77,50,83,82,97,88,81,74,73,51,113,71,109,98,69,74,68,73,88,78,107,110,84,50,97,70,45,75,106,97,117,51,50,76,90,98,103,76,54,76,67,79,57,66,69,53,76,103,47,101,120,101,99];
+        const SCRIPT_URL = _decodeUrl(_secureUrl); 
         
         const USE_MOCK = false; 
 
