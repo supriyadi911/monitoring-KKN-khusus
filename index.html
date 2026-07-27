@@ -625,7 +625,7 @@
                                         <th class="px-6 py-3 text-left font-medium tracking-wider cursor-pointer hover:bg-gray-200 transition" onclick="handleSort('Mhs', 'timestamp')">Waktu Pengiriman <i id="sort-Mhs-timestamp" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
                                         <th class="px-6 py-3 text-left font-medium tracking-wider cursor-pointer hover:bg-gray-200 transition" onclick="handleSort('Mhs', 'namaLengkap')">Mahasiswa <i id="sort-Mhs-namaLengkap" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
                                         <th class="px-6 py-3 text-left font-medium tracking-wider cursor-pointer hover:bg-gray-200 transition" onclick="handleSort('Mhs', 'kelompok')">Kelompok <i id="sort-Mhs-kelompok" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
-                                        <th class="px-6 py-3 text-left font-medium tracking-wider cursor-pointer hover:bg-gray-200 transition" onclick="handleSort('Mhs', 'rencana')">Jenis Laporan & Durasi <i id="sort-Mhs-rencana" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-left font-medium tracking-wider cursor-pointer hover:bg-gray-200 transition" onclick="handleSort('Mhs', 'rencana')">Jenis & Deskripsi Kegiatan <i id="sort-Mhs-rencana" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
                                         <th class="px-6 py-3 text-center font-medium tracking-wider">Aksi</th>
                                     </tr>
                                 </thead>
@@ -748,6 +748,10 @@
                             </select>
                         </div>
                         <div class="mb-3">
+                            <label class="block text-sm text-gray-600 mb-1">Deskripsi Kegiatan *</label>
+                            <textarea id="mhs-deskripsi" required rows="3" class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none" placeholder="Jelaskan detail kegiatan yang dilakukan..."></textarea>
+                        </div>
+                        <div class="mb-3">
                             <label class="block text-sm text-gray-600 mb-1">Tanggal *</label>
                             <input type="date" id="mhs-tanggal" required class="w-full border rounded p-2 text-sm focus:ring-2 focus:ring-purple-500 outline-none">
                         </div>
@@ -784,7 +788,7 @@
                                     <th class="px-4 py-2 w-10 text-center rounded-tl-md"><input type="checkbox" id="selectAllMhs" onclick="toggleAllCheckboxesMhs(this)"></th>
                                     <th class="px-4 py-2 text-left font-medium">Tanggal</th>
                                     <th class="px-4 py-2 text-left font-medium">Waktu Pengiriman</th>
-                                    <th class="px-4 py-2 text-left font-medium">Jenis Kegiatan & Jam</th>
+                                    <th class="px-4 py-2 text-left font-medium">Jenis Kegiatan & Deskripsi</th>
                                     <th class="px-4 py-2 text-center font-medium">Bukti</th>
                                     <th class="px-4 py-2 text-center font-medium rounded-tr-md">Aksi</th>
                                 </tr>
@@ -938,7 +942,7 @@
         };
 
         let mockMahasiswaReports = [
-            { id: 201, username: 'mahasiswa1', namaLengkap: 'Andi Saputra', kelompok: 'Kelompok 1', tanggal: '2023-10-01', rencana: 'Giat Harian', keluhan: 3, foto: 'https://drive.google.com/photo1', timestamp: '01/10/2023, 16:00 WIB' }
+            { id: 201, username: 'mahasiswa1', namaLengkap: 'Andi Saputra', kelompok: 'Kelompok 1', tanggal: '2023-10-01', rencana: 'Giat Harian | Observasi lapangan dan gotong royong warga', keluhan: 3, foto: 'https://drive.google.com/photo1', timestamp: '01/10/2023, 16:00 WIB' }
         ];
 
         // =========================================================================
@@ -2137,7 +2141,8 @@
                 );
             }
             if (filterJenis) {
-                filteredDataMhs = filteredDataMhs.filter(r => r.rencana === filterJenis);
+                // Modifikasi agar tetap bisa baca jika tercampur deskripsi
+                filteredDataMhs = filteredDataMhs.filter(r => (r.rencana || '').split(' | ')[0] === filterJenis);
             }
 
             currentPageMhs = 1;
@@ -2262,6 +2267,9 @@
             const pageData = sortedData.slice(startIndex, endIndex);
 
             pageData.forEach(r => {
+                const jenis = (r.rencana || '').split(' | ')[0];
+                const deskripsi = (r.rencana || '').split(' | ')[1] || '';
+
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="px-6 py-4 text-center">
@@ -2275,8 +2283,9 @@
                     </td>
                     <td class="px-6 py-4 text-gray-700">${r.kelompok}</td>
                     <td class="px-6 py-4">
-                        <div class="text-sm font-semibold text-gray-800" title="${r.rencana}">${r.rencana}</div>
-                        <div class="text-xs text-purple-600 mt-1">Durasi: ${r.keluhan} Jam</div>
+                        <div class="text-sm font-semibold text-gray-800" title="${jenis}">${jenis}</div>
+                        <div class="text-xs text-gray-500 mt-1 max-w-[200px] truncate" title="${deskripsi}">${deskripsi}</div>
+                        <div class="text-xs text-emerald-600 mt-1">Durasi: ${r.keluhan} Jam</div>
                     </td>
                     <td class="px-6 py-4 text-center space-x-2">
                         <a href="${r.foto}" target="_blank" class="text-purple-500 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 p-2 rounded-full inline-block transition" title="Lihat Foto"><i class="fa-solid fa-image"></i></a>
@@ -2386,6 +2395,8 @@
 
             sortedData.forEach(r => {
                 totalJam += Number(r.keluhan || 0); 
+                const jenis = (r.rencana || '').split(' | ')[0];
+                const deskripsi = (r.rencana || '').split(' | ')[1] || '';
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -2395,8 +2406,9 @@
                     <td class="px-4 py-3 whitespace-nowrap text-gray-600">${r.tanggal}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-xs font-mono text-gray-500 bg-gray-50"><i class="fa-regular fa-clock mr-1"></i>${getTimestampStr(r)}</td>
                     <td class="px-4 py-3 text-gray-700">
-                        <div class="font-medium max-w-[200px] truncate" title="${r.rencana}">${r.rencana}</div>
-                        <div class="text-xs text-purple-600 mt-1">${r.keluhan} Jam</div>
+                        <div class="font-bold text-gray-800 truncate" title="${jenis}">${jenis}</div>
+                        <div class="text-xs text-gray-600 mt-0.5 max-w-[200px] truncate" title="${deskripsi}">${deskripsi}</div>
+                        <div class="text-xs text-purple-600 mt-1"><i class="fa-regular fa-clock mr-1"></i>${r.keluhan} Jam</div>
                     </td>
                     <td class="px-4 py-3 text-center">
                         <a href="${r.foto}" target="_blank" class="text-purple-500 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 p-2 rounded-full inline-block transition" title="Lihat Foto"><i class="fa-solid fa-image"></i></a>
@@ -2428,12 +2440,18 @@
             }
 
             const id = document.getElementById('mhs-report-id') ? document.getElementById('mhs-report-id').value : '';
+            
+            // Menggabungkan Jenis dan Deskripsi dengan pemisah " | " agar tidak merusak format backend
+            const inputJenis = document.getElementById('mhs-jenis') ? document.getElementById('mhs-jenis').value : '';
+            const inputDeskripsi = document.getElementById('mhs-deskripsi') ? document.getElementById('mhs-deskripsi').value.trim() : '';
+            const combinedRencana = `${inputJenis} | ${inputDeskripsi}`;
+
             const payload = {
                 id: id ? parseInt(id) : Date.now(), 
                 username: currentUser.username,
                 kelompok: currentUser.kelompok,
                 tanggal: document.getElementById('mhs-tanggal') ? document.getElementById('mhs-tanggal').value : '',
-                rencana: document.getElementById('mhs-jenis') ? document.getElementById('mhs-jenis').value : '', 
+                rencana: combinedRencana, 
                 keluhan: document.getElementById('mhs-jam') ? document.getElementById('mhs-jam').value : '',  
                 foto: document.getElementById('mhs-foto') ? document.getElementById('mhs-foto').value : '',
                 timestamp: new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) + ' WIB'
@@ -2476,6 +2494,8 @@
             if (form) form.reset();
             const id = document.getElementById('mhs-report-id');
             if (id) id.value = '';
+            const mhsDeskripsi = document.getElementById('mhs-deskripsi');
+            if (mhsDeskripsi) mhsDeskripsi.value = '';
             const formTitle = document.getElementById('mhs-form-title');
             if (formTitle) formTitle.innerText = "Buat Laporan Harian";
         }
@@ -2487,13 +2507,18 @@
             const formTitle = document.getElementById('mhs-form-title');
             const reportId = document.getElementById('mhs-report-id');
             const mhsJenis = document.getElementById('mhs-jenis');
+            const mhsDeskripsi = document.getElementById('mhs-deskripsi');
             const mhsTanggal = document.getElementById('mhs-tanggal');
             const mhsJam = document.getElementById('mhs-jam');
             const mhsFoto = document.getElementById('mhs-foto');
 
             if (formTitle) formTitle.innerText = "Edit Laporan Harian";
             if (reportId) reportId.value = r.id;
-            if (mhsJenis) mhsJenis.value = r.rencana;
+            
+            // Memecah kembali data jika ada
+            if (mhsJenis) mhsJenis.value = (r.rencana || '').split(' | ')[0];
+            if (mhsDeskripsi) mhsDeskripsi.value = (r.rencana || '').split(' | ')[1] || '';
+            
             if (mhsTanggal) mhsTanggal.value = r.tanggal;
             if (mhsJam) mhsJam.value = r.keluhan;
             if (mhsFoto) mhsFoto.value = r.foto;
