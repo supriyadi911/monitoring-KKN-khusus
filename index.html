@@ -381,6 +381,13 @@
                     </button>
 
                     <div class="pt-4 pb-1">
+                        <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Rekap & Analitik</p>
+                    </div>
+                    <button onclick="switchAdminTab('rekap-jam')" id="tab-btn-rekap-jam" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
+                        <i class="fa-solid fa-stopwatch w-6 text-center"></i> Rekap Jumlah Jam
+                    </button>
+
+                    <div class="pt-4 pb-1">
                         <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pengaturan</p>
                     </div>
                     <button onclick="switchAdminTab('akun')" id="tab-btn-akun" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
@@ -636,6 +643,61 @@
                         </div>
                         <!-- Pagination Mahasiswa -->
                         <div id="pagination-mhs" data-active="false" class="hidden flex justify-between items-center px-6 py-3 bg-gray-50 border-t"></div>
+                    </div>
+                </div>
+
+                <!-- -----------------------------------------
+                     TAB REKAP JUMLAH JAM MAHASISWA
+                ------------------------------------------ -->
+                <div id="admin-tab-rekap-jam" class="hidden space-y-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h1 class="text-2xl font-bold text-gray-800">Rekap Jumlah Jam Mahasiswa</h1>
+                    </div>
+
+                    <!-- Filter Data Rekap -->
+                    <div class="bg-white rounded-lg shadow-sm p-4 border mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+                        <div>
+                            <h3 class="font-bold text-gray-700 text-sm">Filter Berdasarkan Kelompok</h3>
+                            <p class="text-xs text-gray-500">Pilih kelompok untuk melihat detail jam anggotanya</p>
+                        </div>
+                        <div class="w-full sm:w-64">
+                            <select id="filter-kelompok-rekap" onchange="applyAdminRekapFilter()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm text-gray-700">
+                                <option value="">Semua Kelompok</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tombol Aksi Ekspor -->
+                    <div class="flex flex-col sm:flex-row justify-end gap-3 mb-2">
+                        <button onclick="downloadRekapExcel()" class="bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-bold py-2 px-5 rounded shadow-sm transition flex items-center justify-center">
+                            <i class="fa-solid fa-file-excel mr-2"></i> Unduh Excel
+                        </button>
+                        <button onclick="printRekapPDF()" class="bg-red-600 hover:bg-red-700 text-white text-sm font-bold py-2 px-5 rounded shadow-sm transition flex items-center justify-center">
+                            <i class="fa-solid fa-file-pdf mr-2"></i> Cetak PDF
+                        </button>
+                    </div>
+
+                    <!-- Tabel Data Rekap -->
+                    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                        <div class="px-6 py-4 border-b flex justify-between items-center bg-gray-50">
+                            <h3 class="font-bold text-gray-700">Akumulasi Waktu Pelaksanaan KKN (Target: 181 Jam)</h3>
+                        </div>
+                        <div class="overflow-x-auto p-4">
+                            <table class="w-full whitespace-nowrap">
+                                <thead class="bg-gray-100 text-gray-600 text-sm">
+                                    <tr>
+                                        <th class="px-4 py-3 text-center w-12 rounded-tl-md">No</th>
+                                        <th class="px-4 py-3 text-left font-medium">Mahasiswa</th>
+                                        <th class="px-4 py-3 text-left font-medium">Kelompok</th>
+                                        <th class="px-4 py-3 text-center font-medium">Total Jam</th>
+                                        <th class="px-4 py-3 text-center font-medium rounded-tr-md">Persentase</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-rekap-table-body" class="bg-white divide-y divide-gray-200 text-sm">
+                                    <!-- Data injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
                     </div>
                 </div>
 
@@ -1357,8 +1419,8 @@
         // =========================================================================
 
         function switchAdminTab(tabId, theme = 'ALL') {
-            const tabs = ['dashboard', 'mahasiswa', 'akun'];
-            const buttons = ['dashboard', 'mhs-ponpes', 'mhs-mengajar', 'mhs-dakwah', 'mhs-magang', 'akun'];
+            const tabs = ['dashboard', 'mahasiswa', 'akun', 'rekap-jam'];
+            const buttons = ['dashboard', 'mhs-ponpes', 'mhs-mengajar', 'mhs-dakwah', 'mhs-magang', 'akun', 'rekap-jam'];
             
             tabs.forEach(t => {
                 const content = document.getElementById('admin-tab-' + t);
@@ -1375,6 +1437,7 @@
                     if (tabId === 'dashboard' && b === 'dashboard') isActive = true;
                     if (tabId === 'akun' && b === 'akun') isActive = true;
                     if (tabId === 'mahasiswa' && b === 'mhs-' + theme.toLowerCase()) isActive = true;
+                    if (tabId === 'rekap-jam' && b === 'rekap-jam') isActive = true;
 
                     if (isActive) {
                         btn.className = 'w-full flex items-center px-4 py-3 bg-emerald-600 text-white rounded-lg transition font-medium shadow-sm';
@@ -1396,6 +1459,11 @@
                 if (titleEl) titleEl.innerText = titles[theme] || 'Manajemen Laporan Mahasiswa';
 
                 applyAdminMhsFilters();
+            }
+
+            if (tabId === 'rekap-jam') {
+                populateRekapKelompokFilter();
+                applyAdminRekapFilter();
             }
 
             if (tabId === 'akun') {
@@ -2298,6 +2366,91 @@
             renderPagination('pagination-mhs', totalPages, currentPageMhs, 'Mhs');
         }
 
+        // =========================================================================
+        // FUNGSI REKAP JUMLAH JAM MAHASISWA
+        // =========================================================================
+        function populateRekapKelompokFilter() {
+            const selectEl = document.getElementById('filter-kelompok-rekap');
+            if (!selectEl) return;
+            const currentVal = selectEl.value;
+            
+            // Ambil semua kelompok unik dari akun mahasiswa
+            const kelompokList = [...new Set(accountsData.filter(a => a.role === 'mahasiswa').map(a => a.kelompok).filter(k => k && k !== '-'))].sort();
+            
+            selectEl.innerHTML = '<option value="">Semua Kelompok</option>';
+            kelompokList.forEach(k => {
+                const opt = document.createElement('option');
+                opt.value = k;
+                opt.innerText = k;
+                selectEl.appendChild(opt);
+            });
+            
+            // Pertahankan pilihan sebelumnya jika masih ada
+            if (kelompokList.includes(currentVal)) {
+                selectEl.value = currentVal;
+            } else {
+                selectEl.value = '';
+            }
+        }
+
+        function applyAdminRekapFilter() {
+            const filterKelompok = document.getElementById('filter-kelompok-rekap') ? document.getElementById('filter-kelompok-rekap').value : '';
+            
+            // 1. Ambil daftar akun mahasiswa
+            let mhsList = accountsData.filter(a => a.role === 'mahasiswa');
+            
+            // 2. Filter berdasarkan kelompok (jika dipilih)
+            if (filterKelompok) {
+                mhsList = mhsList.filter(m => m.kelompok === filterKelompok);
+            }
+            
+            // 3. Kalkulasi jam (keluhan/durasi) per mahasiswa dari mahasiswaReportsData
+            const jamMap = {};
+            mahasiswaReportsData.forEach(r => {
+                if (!jamMap[r.username]) jamMap[r.username] = 0;
+                jamMap[r.username] += Number(r.keluhan || 0); // r.keluhan menyimpan jam laporan mahasiswa
+            });
+            
+            const tbody = document.getElementById('admin-rekap-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (mhsList.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500">Tidak ada data mahasiswa ditemukan.</td></tr>';
+                return;
+            }
+            
+            // Urutkan berdasarkan nama lengkap (alfabetis)
+            mhsList.sort((a, b) => (a.namaLengkap || a.username).localeCompare(b.namaLengkap || b.username));
+            
+            mhsList.forEach((m, index) => {
+                const totalJam = jamMap[m.username] || 0;
+                const persentase = ((totalJam / 181) * 100).toFixed(2);
+                
+                // Pewarnaan Badge berdasarkan persentase kemajuan
+                let badgeClass = 'bg-red-100 text-red-800 border border-red-200'; // Merah (< 50%)
+                if (persentase >= 100) badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-300'; // Hijau (Selesai >= 100%)
+                else if (persentase >= 50) badgeClass = 'bg-yellow-100 text-yellow-800 border border-yellow-300'; // Kuning (>= 50%)
+                
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-4 py-3 text-center text-gray-500">${index + 1}</td>
+                    <td class="px-4 py-3 font-medium text-purple-600">
+                        <div>${m.namaLengkap || m.username}</div>
+                        <div class="text-xs text-gray-500 font-normal">@${m.username}</div>
+                    </td>
+                    <td class="px-4 py-3 text-gray-700">${m.kelompok || '-'}</td>
+                    <td class="px-4 py-3 text-center font-bold text-gray-800">${totalJam} Jam</td>
+                    <td class="px-4 py-3 text-center">
+                        <span class="px-2.5 py-1 inline-flex text-xs leading-4 font-bold rounded-full ${badgeClass}">
+                            ${persentase.replace('.', ',')}%
+                        </span>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+        }
+
         function renderPagination(containerId, totalPages, currentPage, type) {
             const container = document.getElementById(containerId);
             if (!container) return;
@@ -2326,6 +2479,173 @@
                     <button onclick="changePage('${type}', 1)" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1 rounded bg-white border border-gray-300 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"><i class="fa-solid fa-chevron-right"></i></button>
                 </div>
             `;
+        }
+
+        // =========================================================================
+        // EKSPOR REKAP (EXCEL & PDF)
+        // =========================================================================
+        function downloadRekapExcel() {
+            const table = document.getElementById('admin-rekap-table-body');
+            const rows = table.querySelectorAll('tr');
+            
+            if (rows.length === 1 && rows[0].innerText.includes('Tidak ada data')) {
+                alert('Tidak ada data untuk diunduh.');
+                return;
+            }
+
+            const filterKelompok = document.getElementById('filter-kelompok-rekap').value || 'Semua Kelompok';
+            
+            // Membuat struktur file Excel (.xls) berbasis HTML agar rapi & langsung ada border/warna
+            let excelHtml = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
+            excelHtml += '<head><meta charset="utf-8"></head><body>';
+            excelHtml += '<table border="1">';
+            excelHtml += '<thead><tr>';
+            excelHtml += '<th style="background-color: #7030A0; color: white; height: 30px;">No</th>';
+            excelHtml += '<th style="background-color: #7030A0; color: white;">Nama Mahasiswa</th>';
+            excelHtml += '<th style="background-color: #7030A0; color: white;">NIM</th>';
+            excelHtml += '<th style="background-color: #7030A0; color: white;">Kelompok</th>';
+            excelHtml += '<th style="background-color: #7030A0; color: white;">Total Jam</th>';
+            excelHtml += '<th style="background-color: #7030A0; color: white;">Ketercapaian</th>';
+            excelHtml += '</tr></thead>';
+            excelHtml += '<tbody>';
+
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                const no = cols[0].innerText.trim();
+                
+                // Pisahkan nama dan username (NIM)
+                const elNamaBlock = cols[1].querySelectorAll('div');
+                const mhsName = elNamaBlock[0] ? elNamaBlock[0].innerText.trim().toUpperCase() : '';
+                const mhsUser = elNamaBlock[1] ? elNamaBlock[1].innerText.replace('@', '').trim() : '';
+                
+                const kelompok = cols[2].innerText.trim();
+                const totalJam = cols[3].innerText.replace(' Jam', '').trim();
+                const persentase = cols[4].innerText.trim();
+                
+                // Tulis data per baris ke dalam sel Excel
+                // mso-number-format:'\@'; memastikan NIM tidak terpotong nol awalnya
+                excelHtml += `<tr>
+                    <td style="text-align: center;">${no}</td>
+                    <td>${mhsName}</td>
+                    <td style="text-align: center; mso-number-format:'\\@';">${mhsUser}</td>
+                    <td style="text-align: center;">${kelompok}</td>
+                    <td style="text-align: center;">${totalJam}</td>
+                    <td style="text-align: center;">${persentase}</td>
+                </tr>`;
+            });
+
+            excelHtml += '</tbody></table></body></html>';
+
+            // Jadikan file bertipe aplikasi Microsoft Excel
+            const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel' });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = `Rekap_Jam_KKN_${filterKelompok.replace(/ /g, '_')}.xls`;
+            link.style.display = 'none';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+
+        function printRekapPDF() {
+            const table = document.getElementById('admin-rekap-table-body');
+            const rows = table.querySelectorAll('tr');
+            
+            if (rows.length === 1 && rows[0].innerText.includes('Tidak ada data')) {
+                alert('Tidak ada data untuk dicetak.');
+                return;
+            }
+
+            const filterKelompok = document.getElementById('filter-kelompok-rekap').value || 'Semua Kelompok';
+            const now = new Date();
+            const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
+            
+            // Format waktu menjadi hh.mm WIB
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            const timeStr = `${hours}.${minutes} WIB`;
+
+            // Menyusun Struktur Tabel HTML yang rapi untuk dicetak
+            let tableHtml = '<table class="data-table">';
+            tableHtml += '<thead><tr><th style="width: 50px;">No</th><th style="text-align: left;">Nama Mahasiswa</th><th>NIM</th><th>Kelompok</th><th>Total Jam</th><th>Ketercapaian</th></tr></thead>';
+            tableHtml += '<tbody>';
+            
+            rows.forEach(row => {
+                const cols = row.querySelectorAll('td');
+                const no = cols[0].innerText.trim();
+                const elNamaBlock = cols[1].querySelectorAll('div');
+                const mhsName = elNamaBlock[0] ? elNamaBlock[0].innerText.trim().toUpperCase() : '';
+                const mhsUser = elNamaBlock[1] ? elNamaBlock[1].innerText.replace('@', '').trim() : '';
+                const kelompok = cols[2].innerText.trim();
+                const totalJam = cols[3].innerText.trim();
+                const persentase = cols[4].innerText.trim();
+                
+                tableHtml += `<tr>
+                    <td style="text-align: center;">${no}</td>
+                    <td>${mhsName}</td>
+                    <td style="text-align: center;">${mhsUser}</td>
+                    <td style="text-align: center;">${kelompok}</td>
+                    <td style="text-align: center; font-weight: bold; color: #444;">${totalJam}</td>
+                    <td style="text-align: center; font-weight: bold; color: #444;">${persentase}</td>
+                </tr>`;
+            });
+            tableHtml += '</tbody></table>';
+
+            // Membuka jendela baru khusus Print
+            const printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <!DOCTYPE html>
+                <html>
+                <head>
+                    <title>Cetak Rekap Jam KKN - ${filterKelompok}</title>
+                    <style>
+                        @page { size: A4 portrait; margin: 20mm; }
+                        body { font-family: Arial, Helvetica, sans-serif; color: #333; line-height: 1.5; font-size: 13px; }
+                        
+                        /* Format Header / Kop Surat */
+                        .header-container { text-align: center; border-bottom: 3px solid #000; padding-bottom: 12px; margin-bottom: 25px; }
+                        .header-container h1 { margin: 0 0 8px 0; font-size: 18px; text-transform: uppercase; font-weight: bold; color: #000; }
+                        
+                        /* Format Info Waktu & Filter */
+                        .info-section { margin-bottom: 20px; font-size: 14px; color: #000; }
+                        .info-section table { border: none; width: auto; border-collapse: collapse; }
+                        .info-section td { padding: 3px 8px 3px 0; border: none; vertical-align: top; }
+                        
+                        /* Format Tabel Data */
+                        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px; }
+                        .data-table th, .data-table td { border: 1px solid #ddd; padding: 12px 10px; }
+                        .data-table th { background-color: #7030A0; color: white; font-weight: bold; text-align: center; border: 1px solid #7030A0; }
+                        .data-table td { color: #555; }
+                        .data-table td:nth-child(2) { color: #666; }
+                    </style>
+                </head>
+                <body>
+                    <div class="header-container">
+                        <h1>REKAPITULASI TOTAL JAM KEGIATAN MAHASISWA KKN</h1>
+                        <h1 style="margin-bottom: 0;">UNIVERSITAS ISLAM NEGERI RADEN INTAN LAMPUNG</h1>
+                    </div>
+                    
+                    <div class="info-section">
+                        <table>
+                            <tr><td style="width: 120px;">Kelompok Filter</td><td>: ${filterKelompok}</td></tr>
+                            <tr><td>Waktu Cetak</td><td>: ${dateStr} pukul ${timeStr}</td></tr>
+                        </table>
+                    </div>
+
+                    ${tableHtml}
+
+                </body>
+                </html>
+            `);
+            
+            printWindow.document.close();
+            printWindow.focus();
+            
+            // Print otomatis
+            setTimeout(() => {
+                printWindow.print();
+                printWindow.close();
+            }, 500);
         }
 
         function changePage(type, offset) {
