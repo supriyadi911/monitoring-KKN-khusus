@@ -952,9 +952,6 @@
         // PENGAMANAN FRONTEND (ANTI-INSPECT & OBFUSCATION)
         // =========================================================================
         // 1. Memblokir Klik Kanan
-        document.addEventListener('contextmenu', function(e) {
-            e.preventDefault();
-        });
 
         // 2. Memblokir shortcut keyboard Developer Tools (F12, Ctrl+Shift+I, Ctrl+U, dll)
         document.addEventListener('keydown', function(e) {
