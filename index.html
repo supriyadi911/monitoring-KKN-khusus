@@ -684,13 +684,14 @@
                         </div>
                         <div class="overflow-x-auto p-4">
                             <table class="w-full whitespace-nowrap">
-                                <thead class="bg-gray-100 text-gray-600 text-sm">
+                                <thead class="bg-gray-100 text-gray-600 text-sm sticky top-0 z-10 shadow-sm">
                                     <tr>
                                         <th class="px-4 py-3 text-center w-12 rounded-tl-md">No</th>
-                                        <th class="px-4 py-3 text-left font-medium">Mahasiswa</th>
-                                        <th class="px-4 py-3 text-left font-medium">Kelompok</th>
-                                        <th class="px-4 py-3 text-center font-medium">Total Jam</th>
-                                        <th class="px-4 py-3 text-center font-medium rounded-tr-md">Persentase</th>
+                                        <th class="px-4 py-3 text-left font-medium cursor-pointer hover:bg-gray-200 transition" onclick="handleSort('Rekap', 'namaLengkap')">Mahasiswa <i id="sort-Rekap-namaLengkap" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-4 py-3 text-left font-medium cursor-pointer hover:bg-gray-200 transition" onclick="handleSort('Rekap', 'kelompok')">Kelompok <i id="sort-Rekap-kelompok" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-4 py-3 text-center font-medium cursor-pointer hover:bg-gray-200 transition" onclick="handleSort('Rekap', 'totalJam')">Total Jam <i id="sort-Rekap-totalJam" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-4 py-3 text-center font-medium cursor-pointer hover:bg-gray-200 transition" onclick="handleSort('Rekap', 'persentase')">Persentase <i id="sort-Rekap-persentase" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-4 py-3 text-center font-medium rounded-tr-md">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody id="admin-rekap-table-body" class="bg-white divide-y divide-gray-200 text-sm">
@@ -873,6 +874,47 @@
              KUMPULAN MODAL (POP-UP) 
         =============================== -->
         
+        <!-- Modal Rincian Kegiatan Mahasiswa (Rekap Jam) -->
+        <div id="rincian-modal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
+            <div class="bg-white rounded-lg shadow-xl w-full max-w-4xl overflow-hidden flex flex-col max-h-[90vh]">
+                <div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-emerald-50">
+                    <h3 class="font-bold text-emerald-800 text-lg" id="rincian-modal-title"><i class="fa-solid fa-list-check mr-2"></i>Rincian Laporan Harian</h3>
+                    <button type="button" onclick="closeRincianModal()" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
+                </div>
+                <div class="p-6 overflow-y-auto flex-1 bg-gray-50">
+                    <div class="mb-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center">
+                        <div>
+                            <p class="text-sm text-gray-500">Mahasiswa</p>
+                            <p class="font-bold text-gray-800" id="rincian-nama">-</p>
+                        </div>
+                        <div class="text-right">
+                            <p class="text-sm text-gray-500">Total Akumulasi</p>
+                            <p class="font-bold text-emerald-600 text-lg" id="rincian-total-jam">0 Jam</p>
+                        </div>
+                    </div>
+                    <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+                        <div class="overflow-x-auto">
+                            <table class="w-full whitespace-nowrap">
+                                <thead class="bg-gray-100 text-gray-600 text-xs">
+                                    <tr>
+                                        <th class="px-4 py-3 text-left font-medium">Tanggal</th>
+                                        <th class="px-4 py-3 text-left font-medium">Jenis Kegiatan</th>
+                                        <th class="px-4 py-3 text-left font-medium">Deskripsi Kegiatan</th>
+                                        <th class="px-4 py-3 text-center font-medium">Durasi</th>
+                                        <th class="px-4 py-3 text-center font-medium bg-emerald-50 border-l border-emerald-100">Status / Aksi</th>
+                                        <th class="px-4 py-3 text-center font-medium">Bukti Foto</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="rincian-table-body" class="bg-white divide-y divide-gray-200 text-sm">
+                                    <!-- Data rincian diinjeksi via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Modal Formulir Akun (Manajemen Admin) -->
         <div id="account-modal" class="fixed inset-0 z-50 hidden bg-black bg-opacity-50 flex items-center justify-center p-4">
             <div class="bg-white rounded-lg shadow-xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
@@ -991,7 +1033,8 @@
         
         let sortState = {
             Mhs: { col: 'tanggal', dir: 'desc' },
-            Akun: { col: 'username', dir: 'asc' }
+            Akun: { col: 'username', dir: 'asc' },
+            Rekap: { col: 'namaLengkap', dir: 'asc' }
         };
 
         const mockUsers = {
@@ -2254,6 +2297,7 @@
 
             if (type === 'Mhs') renderAdminTableMahasiswa(filteredDataMhs);
             if (type === 'Akun') renderAdminTableAkun();
+            if (type === 'Rekap') applyAdminRekapFilter();
         }
 
         function sortData(data, type) {
@@ -2332,8 +2376,15 @@
             const pageData = sortedData.slice(startIndex, endIndex);
 
             pageData.forEach(r => {
-                const jenis = (r.rencana || '').split(' | ')[0];
-                const deskripsi = (r.rencana || '').split(' | ')[1] || '';
+                const parts = (r.rencana || '').split(' | ');
+                const jenis = parts[0];
+                const deskripsi = parts[1] || '';
+                const status = parts[2] || 'DIAKUI';
+                const isDiakui = status !== 'TIDAK_DIAKUI';
+                
+                const jamHtml = isDiakui 
+                    ? `<div class="text-xs text-emerald-600 mt-1 font-medium"><i class="fa-regular fa-clock mr-1"></i>Durasi: ${r.keluhan} Jam</div>` 
+                    : `<div class="text-xs text-red-500 mt-1 line-through"><i class="fa-regular fa-clock mr-1"></i>Durasi: ${r.keluhan} Jam</div><div class="text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded inline-block mt-0.5"><i class="fa-solid fa-xmark mr-1"></i>Ditolak</div>`;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -2350,7 +2401,7 @@
                     <td class="px-6 py-4">
                         <div class="text-sm font-semibold text-gray-800" title="${jenis}">${jenis}</div>
                         <div class="text-xs text-gray-500 mt-1 max-w-[200px] truncate" title="${deskripsi}">${deskripsi}</div>
-                        <div class="text-xs text-emerald-600 mt-1">Durasi: ${r.keluhan} Jam</div>
+                        ${jamHtml}
                     </td>
                     <td class="px-6 py-4 text-center space-x-2">
                         <a href="${r.foto}" target="_blank" class="text-purple-500 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 p-2 rounded-full inline-block transition" title="Lihat Foto"><i class="fa-solid fa-image"></i></a>
@@ -2405,29 +2456,68 @@
             const jamMap = {};
             mahasiswaReportsData.forEach(r => {
                 if (!jamMap[r.username]) jamMap[r.username] = 0;
-                jamMap[r.username] += Number(r.keluhan || 0); // r.keluhan menyimpan jam laporan mahasiswa
+                
+                // Cek Status Persetujuan Jam
+                const status = (r.rencana || '').split(' | ')[2] || 'DIAKUI';
+                if (status !== 'TIDAK_DIAKUI') {
+                    jamMap[r.username] += Number(r.keluhan || 0); // r.keluhan menyimpan jam laporan mahasiswa
+                }
             });
             
+            // 4. Petakan totalJam dan persentase ke dalam objek data
+            let rekapData = mhsList.map(m => {
+                const totalJam = jamMap[m.username] || 0;
+                const persentase = ((totalJam / 181) * 100).toFixed(2);
+                return {
+                    ...m,
+                    totalJam: totalJam,
+                    persentaseStr: persentase,
+                    persentaseVal: Number(persentase)
+                };
+            });
+
+            // 5. Urutkan berdasarkan state sorting Rekap
+            const { col, dir } = sortState['Rekap'];
+            rekapData.sort((a, b) => {
+                let valA = a[col];
+                let valB = b[col];
+
+                if (col === 'namaLengkap') {
+                    valA = (a.namaLengkap || a.username).toLowerCase();
+                    valB = (b.namaLengkap || b.username).toLowerCase();
+                } else if (col === 'kelompok') {
+                    valA = (a.kelompok || '').toLowerCase();
+                    valB = (b.kelompok || '').toLowerCase();
+                } else if (col === 'totalJam') {
+                    valA = a.totalJam;
+                    valB = b.totalJam;
+                } else if (col === 'persentase') {
+                    valA = a.persentaseVal;
+                    valB = b.persentaseVal;
+                }
+
+                if (valA < valB) return dir === 'asc' ? -1 : 1;
+                if (valA > valB) return dir === 'asc' ? 1 : -1;
+                return 0;
+            });
+
             const tbody = document.getElementById('admin-rekap-table-body');
             if (!tbody) return;
             tbody.innerHTML = '';
             
-            if (mhsList.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="5" class="px-4 py-4 text-center text-gray-500">Tidak ada data mahasiswa ditemukan.</td></tr>';
+            if (rekapData.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Tidak ada data mahasiswa ditemukan.</td></tr>';
                 return;
             }
             
-            // Urutkan berdasarkan nama lengkap (alfabetis)
-            mhsList.sort((a, b) => (a.namaLengkap || a.username).localeCompare(b.namaLengkap || b.username));
-            
-            mhsList.forEach((m, index) => {
-                const totalJam = jamMap[m.username] || 0;
-                const persentase = ((totalJam / 181) * 100).toFixed(2);
+            rekapData.forEach((m, index) => {
+                const totalJam = m.totalJam;
+                const persentase = m.persentaseStr;
                 
                 // Pewarnaan Badge berdasarkan persentase kemajuan
                 let badgeClass = 'bg-red-100 text-red-800 border border-red-200'; // Merah (< 50%)
-                if (persentase >= 100) badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-300'; // Hijau (Selesai >= 100%)
-                else if (persentase >= 50) badgeClass = 'bg-yellow-100 text-yellow-800 border border-yellow-300'; // Kuning (>= 50%)
+                if (m.persentaseVal >= 100) badgeClass = 'bg-emerald-100 text-emerald-800 border border-emerald-300'; // Hijau (Selesai >= 100%)
+                else if (m.persentaseVal >= 50) badgeClass = 'bg-yellow-100 text-yellow-800 border border-yellow-300'; // Kuning (>= 50%)
                 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -2443,9 +2533,123 @@
                             ${persentase.replace('.', ',')}%
                         </span>
                     </td>
+                    <td class="px-4 py-3 text-center">
+                        <button onclick="openRincianModal('${m.username}')" class="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 px-3 py-1.5 rounded text-xs font-bold transition shadow-sm"><i class="fa-solid fa-list mr-1"></i> Detail</button>
+                    </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function openRincianModal(username) {
+            const modal = document.getElementById('rincian-modal');
+            const tbody = document.getElementById('rincian-table-body');
+            const namaEl = document.getElementById('rincian-nama');
+            const totalJamEl = document.getElementById('rincian-total-jam');
+            
+            if (!modal || !tbody) return;
+
+            // Cari detail user
+            const user = accountsData.find(u => u.username === username);
+            if (user && namaEl) namaEl.innerHTML = `${user.namaLengkap || user.username} <span class="text-xs text-gray-500 font-normal">(@${user.username})</span>`;
+
+            // Filter laporan milik user ini saja
+            const reports = mahasiswaReportsData.filter(r => r.username === username);
+            
+            // Urutkan berdasarkan tanggal terbaru
+            reports.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
+
+            tbody.innerHTML = '';
+            let totalJam = 0;
+
+            if (reports.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Belum ada laporan kegiatan.</td></tr>';
+            } else {
+                reports.forEach(r => {
+                    const jam = Number(r.keluhan || 0);
+                    
+                    const parts = (r.rencana || '').split(' | ');
+                    const jenis = parts[0];
+                    const deskripsi = parts[1] || '-';
+                    const status = parts[2] || 'DIAKUI';
+                    const isDiakui = status !== 'TIDAK_DIAKUI';
+
+                    if (isDiakui) totalJam += jam;
+
+                    const jamHtml = isDiakui 
+                        ? `<span class="font-bold text-emerald-600">${jam} Jam</span>` 
+                        : `<span class="font-bold text-red-500 line-through">${jam} Jam</span><br><span class="text-[10px] text-red-500 font-bold">0 Jam</span>`;
+                    
+                    const checkedAttr = isDiakui ? 'checked' : '';
+                    const toggleHtml = `
+                        <label class="inline-flex items-center cursor-pointer justify-center">
+                          <input type="checkbox" value="" class="sr-only peer" ${checkedAttr} onchange="toggleReportStatus('${r.id}', this.checked)">
+                          <div class="relative w-9 h-5 bg-red-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                          <span class="ms-2 text-[10px] font-bold ${isDiakui ? 'text-emerald-600' : 'text-red-500'} w-12 text-left">${isDiakui ? 'DIAKUI' : 'DITOLAK'}</span>
+                        </label>
+                    `;
+
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 whitespace-nowrap text-gray-600">${r.tanggal}</td>
+                        <td class="px-4 py-3 font-medium text-gray-800">${jenis}</td>
+                        <td class="px-4 py-3 whitespace-normal min-w-[200px] text-xs text-gray-600">${deskripsi}</td>
+                        <td class="px-4 py-3 text-center">${jamHtml}</td>
+                        <td class="px-4 py-3 text-center bg-emerald-50 bg-opacity-30 border-l border-r border-emerald-100">${toggleHtml}</td>
+                        <td class="px-4 py-3 text-center">
+                            <a href="${r.foto}" target="_blank" class="text-purple-500 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 p-2 rounded-full inline-block transition" title="Lihat Foto"><i class="fa-solid fa-image"></i></a>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            if (totalJamEl) totalJamEl.innerText = `${totalJam} Jam`;
+            
+            modal.classList.remove('hidden');
+        }
+
+        function toggleReportStatus(id, isDiakui) {
+            const r = mahasiswaReportsData.find(x => String(x.id) === String(id));
+            if (!r) return;
+
+            const parts = (r.rencana || '').split(' | ');
+            const jenis = parts[0];
+            const deskripsi = parts[1] || '';
+            const newStatus = isDiakui ? 'DIAKUI' : 'TIDAK_DIAKUI';
+            
+            // Simpan status baru
+            r.rencana = `${jenis} | ${deskripsi} | ${newStatus}`;
+
+            // Perbarui UI secara langsung (Optimistic Update)
+            openRincianModal(r.username);
+            applyAdminRekapFilter();
+            applyAdminMhsFilters(); 
+
+            // Kirim ke backend di latar belakang
+            const payload = {
+                id: r.id,
+                tanggal: r.tanggal,
+                rencana: r.rencana,
+                keluhan: r.keluhan,
+                foto: r.foto
+            };
+
+            if (USE_MOCK) {
+                const idx = mockMahasiswaReports.findIndex(x => String(x.id) === String(r.id));
+                if (idx > -1) mockMahasiswaReports[idx].rencana = r.rencana;
+            } else {
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'editMahasiswaReport', data: payload }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                }).catch(e => console.error("Gagal mengupdate status:", e));
+            }
+        }
+
+        function closeRincianModal() {
+            const modal = document.getElementById('rincian-modal');
+            if (modal) modal.classList.add('hidden');
         }
 
         function renderPagination(containerId, totalPages, currentPage, type) {
@@ -2711,9 +2915,17 @@
             const sortedData = myReports.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
 
             sortedData.forEach(r => {
-                totalJam += Number(r.keluhan || 0); 
-                const jenis = (r.rencana || '').split(' | ')[0];
-                const deskripsi = (r.rencana || '').split(' | ')[1] || '';
+                const parts = (r.rencana || '').split(' | ');
+                const jenis = parts[0];
+                const deskripsi = parts[1] || '';
+                const status = parts[2] || 'DIAKUI';
+                const isDiakui = status !== 'TIDAK_DIAKUI';
+
+                if (isDiakui) totalJam += Number(r.keluhan || 0); 
+
+                const jamHtml = isDiakui 
+                    ? `<div class="text-xs text-purple-600 mt-1 font-medium"><i class="fa-regular fa-clock mr-1"></i>${r.keluhan} Jam</div>` 
+                    : `<div class="text-xs text-red-500 mt-1 line-through"><i class="fa-regular fa-clock mr-1"></i>${r.keluhan} Jam</div><div class="text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded inline-block mt-0.5"><i class="fa-solid fa-xmark mr-1"></i>Ditolak</div>`;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -2725,7 +2937,7 @@
                     <td class="px-4 py-3 text-gray-700">
                         <div class="font-bold text-gray-800 truncate" title="${jenis}">${jenis}</div>
                         <div class="text-xs text-gray-600 mt-0.5 max-w-[200px] truncate" title="${deskripsi}">${deskripsi}</div>
-                        <div class="text-xs text-purple-600 mt-1"><i class="fa-regular fa-clock mr-1"></i>${r.keluhan} Jam</div>
+                        ${jamHtml}
                     </td>
                     <td class="px-4 py-3 text-center">
                         <a href="${r.foto}" target="_blank" class="text-purple-500 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 p-2 rounded-full inline-block transition" title="Lihat Foto"><i class="fa-solid fa-image"></i></a>
@@ -2739,10 +2951,11 @@
             });
 
             if (tfoot) {
+                const persentase = totalJam ? ((totalJam / 181) * 100).toFixed(1).replace('.', ',').replace(',0', '') : "0";
                 tfoot.innerHTML = `
                     <tr>
                         <td colspan="3" class="px-4 py-3 text-right font-bold text-gray-800">Total Akumulasi Waktu:</td>
-                        <td colspan="3" class="px-4 py-3 font-bold text-purple-700 text-base">${totalJam} Jam dari target 181 jam </td>
+                        <td colspan="3" class="px-4 py-3 font-bold text-purple-700 text-base">${totalJam} Jam (${persentase}%) dari target 181 jam </td>
                     </tr>
                 `;
             }
@@ -2758,10 +2971,15 @@
 
             const id = document.getElementById('mhs-report-id') ? document.getElementById('mhs-report-id').value : '';
             
-            // Menggabungkan Jenis dan Deskripsi dengan pemisah " | " agar tidak merusak format backend
+            // Menggabungkan Jenis, Deskripsi, dan Status dengan pemisah " | " agar tidak merusak format backend
             const inputJenis = document.getElementById('mhs-jenis') ? document.getElementById('mhs-jenis').value : '';
             const inputDeskripsi = document.getElementById('mhs-deskripsi') ? document.getElementById('mhs-deskripsi').value.trim() : '';
-            const combinedRencana = `${inputJenis} | ${inputDeskripsi}`;
+            
+            // Pertahankan status persetujuan yang sudah ada jika sedang diedit
+            const existingReport = mahasiswaReportsData.find(x => String(x.id) === String(id));
+            const existingStatus = existingReport ? (existingReport.rencana || '').split(' | ')[2] || 'DIAKUI' : 'DIAKUI';
+            
+            const combinedRencana = `${inputJenis} | ${inputDeskripsi} | ${existingStatus}`;
 
             const payload = {
                 id: id ? parseInt(id) : Date.now(), 
