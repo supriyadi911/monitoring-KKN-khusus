@@ -363,7 +363,7 @@
                         <i class="fa-solid fa-chart-pie w-6 text-center"></i> Dashboard
                     </button>
                     
-                    <div class="pt-4 pb-1">
+                    <div id="menu-group-laporan-mhs" class="pt-4 pb-1">
                         <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Laporan Mahasiswa</p>
                     </div>
                     
@@ -386,8 +386,14 @@
                     <button onclick="switchAdminTab('rekap-jam')" id="tab-btn-rekap-jam" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
                         <i class="fa-solid fa-stopwatch w-6 text-center"></i> Rekap Jumlah Jam
                     </button>
+                    <button onclick="switchAdminTab('verifikasi')" id="tab-btn-verifikasi" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
+                        <i class="fa-solid fa-check-double w-6 text-center"></i> Laporan Diverifikasi
+                    </button>
+                    <button onclick="switchAdminTab('ditolak')" id="tab-btn-ditolak" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
+                        <i class="fa-solid fa-ban w-6 text-center"></i> Laporan Ditolak
+                    </button>
 
-                    <div class="pt-4 pb-1">
+                    <div id="menu-group-pengaturan" class="pt-4 pb-1">
                         <p class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider">Pengaturan</p>
                     </div>
                     <button onclick="switchAdminTab('akun')" id="tab-btn-akun" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
@@ -492,12 +498,61 @@
                         </div>
                     </div>
 
+                    <!-- Statistik Status Laporan (BARU) -->
+                    <h3 class="font-bold text-gray-700 mb-3 mt-6"><i class="fa-solid fa-chart-pie mr-2 text-indigo-600"></i>Status Laporan Mahasiswa</h3>
+                    <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                        <!-- Diverifikasi -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 border-t-4 border-blue-500 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-check-double text-3xl text-blue-100 mb-2"></i>
+                            <p class="text-xs text-gray-500 font-medium">Sudah Diverifikasi</p>
+                            <p class="text-2xl font-bold text-gray-800" id="stat-verified">0</p>
+                            <div class="mt-1">
+                                <span class="text-[10px] font-bold text-blue-700 bg-blue-100 px-2 py-0.5 rounded" id="pct-verified">0%</span>
+                            </div>
+                        </div>
+                        <!-- Belum Diverifikasi -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 border-t-4 border-gray-400 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-hourglass-half text-3xl text-gray-200 mb-2"></i>
+                            <p class="text-xs text-gray-500 font-medium">Belum Diverifikasi</p>
+                            <p class="text-2xl font-bold text-gray-800" id="stat-unverified">0</p>
+                            <div class="mt-1">
+                                <span class="text-[10px] font-bold text-gray-700 bg-gray-100 px-2 py-0.5 rounded" id="pct-unverified">0%</span>
+                            </div>
+                        </div>
+                        <!-- Diterima (Diakui) -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 border-t-4 border-emerald-500 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-file-circle-check text-3xl text-emerald-100 mb-2"></i>
+                            <p class="text-xs text-gray-500 font-medium">Laporan Diterima</p>
+                            <p class="text-2xl font-bold text-gray-800" id="stat-diterima">0</p>
+                            <div class="mt-1">
+                                <span class="text-[10px] font-bold text-emerald-700 bg-emerald-100 px-2 py-0.5 rounded" id="pct-diterima">0%</span>
+                            </div>
+                        </div>
+                        <!-- Ditolak (Tidak Diakui) -->
+                        <div class="bg-white rounded-lg shadow-sm p-4 border-t-4 border-red-500 flex flex-col items-center text-center">
+                            <i class="fa-solid fa-file-circle-xmark text-3xl text-red-100 mb-2"></i>
+                            <p class="text-xs text-gray-500 font-medium">Laporan Ditolak</p>
+                            <p class="text-2xl font-bold text-gray-800" id="stat-ditolak">0</p>
+                            <div class="mt-1">
+                                <span class="text-[10px] font-bold text-red-700 bg-red-100 px-2 py-0.5 rounded" id="pct-ditolak">0%</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STATISTIK KELOMPOK & FAKULTAS -->
+                    <div id="verifikator-stats-container" class="hidden mb-8">
+                        <h3 class="font-bold text-gray-700 mb-3 mt-2"><i class="fa-solid fa-users-viewfinder mr-2 text-blue-600"></i>Sebaran Kelompok & Fakultas Mahasiswa</h3>
+                        <div id="verifikator-cards-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                            <!-- Data Kartu Diinjeksi via JS -->
+                        </div>
+                    </div>
+
                     <!-- Grafik Distribusi -->
                     <div class="bg-white rounded-lg shadow-sm p-6 border mb-8">
                         <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 gap-2">
                             <h3 class="font-bold text-gray-700">Grafik Distribusi Laporan Mahasiswa per Hari</h3>
                         </div>
-                        <div class="relative h-72 w-full">
+                        <div class="relative h-72 w-full flex justify-center">
                             <canvas id="reportChart"></canvas>
                         </div>
                     </div>
@@ -657,13 +712,21 @@
                     <!-- Filter Data Rekap -->
                     <div class="bg-white rounded-lg shadow-sm p-4 border mb-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                         <div>
-                            <h3 class="font-bold text-gray-700 text-sm">Filter Berdasarkan Kelompok</h3>
-                            <p class="text-xs text-gray-500">Pilih kelompok untuk melihat detail jam anggotanya</p>
+                            <h3 class="font-bold text-gray-700 text-sm">Pencarian & Filter</h3>
+                            <p class="text-xs text-gray-500">Cari nama mahasiswa atau pilih kelompok</p>
                         </div>
-                        <div class="w-full sm:w-64">
-                            <select id="filter-kelompok-rekap" onchange="applyAdminRekapFilter()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm text-gray-700">
-                                <option value="">Semua Kelompok</option>
-                            </select>
+                        <div class="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+                            <div class="relative w-full sm:w-64">
+                                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <i class="fa-solid fa-search text-gray-400"></i>
+                                </div>
+                                <input type="text" id="search-rekap" onkeyup="applyAdminRekapFilter()" placeholder="Cari nama mahasiswa..." class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 outline-none text-sm shadow-sm">
+                            </div>
+                            <div class="w-full sm:w-56">
+                                <select id="filter-kelompok-rekap" onchange="applyAdminRekapFilter()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-emerald-500 outline-none shadow-sm text-gray-700">
+                                    <option value="">Semua Kelompok</option>
+                                </select>
+                            </div>
                         </div>
                     </div>
 
@@ -699,6 +762,120 @@
                                 </tbody>
                             </table>
                         </div>
+                    </div>
+                </div>
+
+                <!-- -----------------------------------------
+                     TAB LAPORAN DIVERIFIKASI
+                ------------------------------------------ -->
+                <div id="admin-tab-verifikasi" class="hidden space-y-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h1 class="text-2xl font-bold text-gray-800 text-blue-700"><i class="fa-solid fa-check-double mr-2"></i>Daftar Laporan Diverifikasi</h1>
+                    </div>
+
+                    <!-- Toolbar Pencarian & Filter Verifikasi -->
+                    <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" id="search-verif" onkeyup="applyAdminVerifFilters()" placeholder="Cari nama mahasiswa, kelompok, atau deskripsi..." class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm shadow-sm">
+                        </div>
+                        <div class="w-full sm:w-56">
+                            <select id="filter-jenis-verif" onchange="applyAdminVerifFilters()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm text-gray-700">
+                                <option value="">Semua Jenis Laporan</option>
+                                <option value="Giat Harian">Giat Harian</option>
+                                <option value="Laporan Akhir">Laporan Akhir</option>
+                            </select>
+                        </div>
+                        <div class="w-full sm:w-32">
+                            <select onchange="changeItemsPerPage(this.value)" class="items-per-page-select w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm text-gray-700">
+                                <option value="20">20 Baris</option>
+                                <option value="50">50 Baris</option>
+                                <option value="100">100 Baris</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Data Laporan Diverifikasi -->
+                    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                        <div class="px-6 py-4 border-b bg-blue-50">
+                            <h3 class="font-bold text-blue-800">Laporan Telah Diverifikasi (Selesai/Sah)</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full whitespace-nowrap">
+                                <thead class="bg-gray-100 text-gray-600 text-sm">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left font-medium cursor-pointer hover:bg-gray-200" onclick="handleSort('Verif', 'tanggal')">Tanggal <i id="sort-Verif-tanggal" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-left font-medium cursor-pointer hover:bg-gray-200" onclick="handleSort('Verif', 'namaLengkap')">Mahasiswa <i id="sort-Verif-namaLengkap" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-left font-medium cursor-pointer hover:bg-gray-200" onclick="handleSort('Verif', 'kelompok')">Kelompok <i id="sort-Verif-kelompok" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-left font-medium cursor-pointer hover:bg-gray-200" onclick="handleSort('Verif', 'rencana')">Kegiatan <i id="sort-Verif-rencana" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-center font-medium">Status & Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-verif-table-body" class="bg-white divide-y divide-gray-200 text-sm">
+                                    <!-- Data injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="pagination-verif" data-active="false" class="hidden flex justify-between items-center px-6 py-3 bg-gray-50 border-t"></div>
+                    </div>
+                </div>
+
+                <!-- -----------------------------------------
+                     TAB LAPORAN DITOLAK
+                ------------------------------------------ -->
+                <div id="admin-tab-ditolak" class="hidden space-y-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h1 class="text-2xl font-bold text-gray-800 text-red-700"><i class="fa-solid fa-ban mr-2"></i>Daftar Laporan Ditolak</h1>
+                    </div>
+
+                    <!-- Toolbar Pencarian & Filter Ditolak -->
+                    <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" id="search-tolak" onkeyup="applyAdminTolakFilters()" placeholder="Cari nama mahasiswa, kelompok, atau deskripsi..." class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm shadow-sm">
+                        </div>
+                        <div class="w-full sm:w-56">
+                            <select id="filter-jenis-tolak" onchange="applyAdminTolakFilters()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none shadow-sm text-gray-700">
+                                <option value="">Semua Jenis Laporan</option>
+                                <option value="Giat Harian">Giat Harian</option>
+                                <option value="Laporan Akhir">Laporan Akhir</option>
+                            </select>
+                        </div>
+                        <div class="w-full sm:w-32">
+                            <select onchange="changeItemsPerPage(this.value)" class="items-per-page-select w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none shadow-sm text-gray-700">
+                                <option value="20">20 Baris</option>
+                                <option value="50">50 Baris</option>
+                                <option value="100">100 Baris</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Data Laporan Ditolak -->
+                    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                        <div class="px-6 py-4 border-b bg-red-50">
+                            <h3 class="font-bold text-red-800">Laporan Tidak Diakui (Ditolak)</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full whitespace-nowrap">
+                                <thead class="bg-gray-100 text-gray-600 text-sm">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left font-medium cursor-pointer hover:bg-gray-200" onclick="handleSort('Tolak', 'tanggal')">Tanggal <i id="sort-Tolak-tanggal" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-left font-medium cursor-pointer hover:bg-gray-200" onclick="handleSort('Tolak', 'namaLengkap')">Mahasiswa <i id="sort-Tolak-namaLengkap" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-left font-medium cursor-pointer hover:bg-gray-200" onclick="handleSort('Tolak', 'kelompok')">Kelompok <i id="sort-Tolak-kelompok" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-left font-medium cursor-pointer hover:bg-gray-200" onclick="handleSort('Tolak', 'rencana')">Kegiatan <i id="sort-Tolak-rencana" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-center font-medium">Status & Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-tolak-table-body" class="bg-white divide-y divide-gray-200 text-sm">
+                                    <!-- Data injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="pagination-tolak" data-active="false" class="hidden flex justify-between items-center px-6 py-3 bg-gray-50 border-t"></div>
                     </div>
                 </div>
 
@@ -882,14 +1059,16 @@
                     <button type="button" onclick="closeRincianModal()" class="text-gray-400 hover:text-red-500 transition"><i class="fa-solid fa-xmark text-xl"></i></button>
                 </div>
                 <div class="p-6 overflow-y-auto flex-1 bg-gray-50">
-                    <div class="mb-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex justify-between items-center">
+                    <div class="mb-4 bg-white p-4 rounded-lg shadow-sm border border-gray-200 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                         <div>
                             <p class="text-sm text-gray-500">Mahasiswa</p>
                             <p class="font-bold text-gray-800" id="rincian-nama">-</p>
                         </div>
-                        <div class="text-right">
-                            <p class="text-sm text-gray-500">Total Akumulasi</p>
-                            <p class="font-bold text-emerald-600 text-lg" id="rincian-total-jam">0 Jam</p>
+                        <div class="flex items-center space-x-4 bg-gray-50 p-2 rounded border w-full sm:w-auto">
+                            <div class="text-right flex-1 sm:flex-none">
+                                <p class="text-xs text-gray-500 uppercase font-bold">Total Akumulasi</p>
+                                <p class="font-bold text-emerald-600 text-xl leading-none mt-1" id="rincian-total-jam">0 Jam</p>
+                            </div>
                         </div>
                     </div>
                     <div class="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
@@ -901,7 +1080,7 @@
                                         <th class="px-4 py-3 text-left font-medium">Jenis Kegiatan</th>
                                         <th class="px-4 py-3 text-left font-medium">Deskripsi Kegiatan</th>
                                         <th class="px-4 py-3 text-center font-medium">Durasi</th>
-                                        <th class="px-4 py-3 text-center font-medium bg-emerald-50 border-l border-emerald-100">Status / Aksi</th>
+                                        <th class="px-4 py-3 text-center font-medium bg-emerald-50 border-l border-emerald-100">Status & Verifikasi</th>
                                         <th class="px-4 py-3 text-center font-medium">Bukti Foto</th>
                                     </tr>
                                 </thead>
@@ -1025,8 +1204,12 @@
         let accountsData = []; 
         let filteredDataMhs = [];
         let filteredDataAkun = [];
+        let filteredDataVerif = [];
+        let filteredDataTolak = [];
         let currentPageMhs = 1;
         let currentPageAkun = 1;
+        let currentPageVerif = 1;
+        let currentPageTolak = 1;
         let itemsPerPage = 20;
         let currentUnreportedMhs = [];
         let currentAdminMhsTheme = 'ALL';
@@ -1034,7 +1217,9 @@
         let sortState = {
             Mhs: { col: 'tanggal', dir: 'desc' },
             Akun: { col: 'username', dir: 'asc' },
-            Rekap: { col: 'namaLengkap', dir: 'asc' }
+            Rekap: { col: 'namaLengkap', dir: 'asc' },
+            Verif: { col: 'tanggal', dir: 'desc' },
+            Tolak: { col: 'tanggal', dir: 'desc' }
         };
 
         const mockUsers = {
@@ -1318,6 +1503,35 @@
                     if (elements.adminPage) {
                         elements.adminPage.classList.remove('hidden');
                         elements.adminPage.classList.add('flex');
+                        
+                        // Logika pembatasan UI untuk akun verifikator spesifik (Ver1ok, Ver2ok, Ver3ok)
+                        const isVerAkun = ['ver1ok', 'ver2ok', 'ver3ok'].includes(currentUser.username.toLowerCase());
+                        const elLaporanGrup = document.getElementById('menu-group-laporan-mhs');
+                        const elTabPonpes = document.getElementById('tab-btn-mhs-ponpes');
+                        const elTabMengajar = document.getElementById('tab-btn-mhs-mengajar');
+                        const elTabDakwah = document.getElementById('tab-btn-mhs-dakwah');
+                        const elTabMagang = document.getElementById('tab-btn-mhs-magang');
+                        const elPengaturanGrup = document.getElementById('menu-group-pengaturan');
+                        const elTabAkun = document.getElementById('tab-btn-akun');
+
+                        // MENGGUNAKAN STYLE DISPLAY AGAR TIDAK DITIMPA OLEH CLASS TABS LAIN
+                        if (isVerAkun) {
+                            if (elLaporanGrup) elLaporanGrup.style.display = 'none';
+                            if (elTabPonpes) elTabPonpes.style.display = 'none';
+                            if (elTabMengajar) elTabMengajar.style.display = 'none';
+                            if (elTabDakwah) elTabDakwah.style.display = 'none';
+                            if (elTabMagang) elTabMagang.style.display = 'none';
+                            if (elPengaturanGrup) elPengaturanGrup.style.display = 'none';
+                            if (elTabAkun) elTabAkun.style.display = 'none';
+                        } else {
+                            if (elLaporanGrup) elLaporanGrup.style.display = '';
+                            if (elTabPonpes) elTabPonpes.style.display = '';
+                            if (elTabMengajar) elTabMengajar.style.display = '';
+                            if (elTabDakwah) elTabDakwah.style.display = '';
+                            if (elTabMagang) elTabMagang.style.display = '';
+                            if (elPengaturanGrup) elPengaturanGrup.style.display = '';
+                            if (elTabAkun) elTabAkun.style.display = '';
+                        }
                     }
                     if (elements.btnToggle) elements.btnToggle.classList.remove('hidden'); 
                     
@@ -1428,6 +1642,39 @@
                     setConnectionStatus('online');
                 }
 
+                // =========================================================
+                // FILTER DATA UNTUK AKUN VERIFIKATOR (Ver1ok, Ver2ok, Ver3ok)
+                // =========================================================
+                if (currentUser && ['ver1ok', 'ver2ok', 'ver3ok'].includes(currentUser.username.toLowerCase())) {
+                    const allowedStudents = new Set();
+                    accountsData = accountsData.filter(acc => {
+                        if (acc.role === 'admin') return true;
+                        
+                        // Gabungkan kelompok dan fakultas untuk mendeteksi keyword pencarian
+                        const info = ((acc.kelompok || '') + ' ' + (acc.fakultas || '')).toUpperCase();
+                        let isAllowed = false;
+                        const uname = currentUser.username.toLowerCase();
+                        
+                        // Pemisahan berdasarkan penugasan yang diberikan
+                        if (uname === 'ver1ok') {
+                            const m1 = ['BIMBINGAN KONSELING', 'BIMBINGAN DAN KONSELING PENDIDIKAN ISLAM', 'MANAJEMEN PENDIDIKAN ISLAM', 'PENDIDIKAN AGAMA ISLAM', 'FISIKA', 'INGGRIS'];
+                            isAllowed = m1.some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
+                        } else if (uname === 'ver2ok') {
+                            const m2 = ['MADRASAH IBTIDAIYAH', 'BIOLOGI', 'MATEMATIKA', 'ANAK USIA DINI', 'ARAB'];
+                            isAllowed = m2.some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
+                        } else if (uname === 'ver3ok') {
+                            isAllowed = info.includes('PONPES') || info.includes('MAGANG') || info.includes('DAKWAH');
+                        }
+                        
+                        if (isAllowed) allowedStudents.add(acc.username);
+                        return isAllowed;
+                    });
+                    
+                    // Filter laporan agar hanya milik mahasiswa yang diizinkan yang ditampilkan
+                    mahasiswaReportsData = mahasiswaReportsData.filter(rep => allowedStudents.has(rep.username));
+                }
+                // =========================================================
+
                 if (!currentUser) {
                     renderPublicDashboard();
                 } else {
@@ -1459,8 +1706,8 @@
         // =========================================================================
 
         function switchAdminTab(tabId, theme = 'ALL') {
-            const tabs = ['dashboard', 'mahasiswa', 'akun', 'rekap-jam'];
-            const buttons = ['dashboard', 'mhs-ponpes', 'mhs-mengajar', 'mhs-dakwah', 'mhs-magang', 'akun', 'rekap-jam'];
+            const tabs = ['dashboard', 'mahasiswa', 'akun', 'rekap-jam', 'verifikasi', 'ditolak'];
+            const buttons = ['dashboard', 'mhs-ponpes', 'mhs-mengajar', 'mhs-dakwah', 'mhs-magang', 'akun', 'rekap-jam', 'verifikasi', 'ditolak'];
             
             tabs.forEach(t => {
                 const content = document.getElementById('admin-tab-' + t);
@@ -1478,11 +1725,16 @@
                     if (tabId === 'akun' && b === 'akun') isActive = true;
                     if (tabId === 'mahasiswa' && b === 'mhs-' + theme.toLowerCase()) isActive = true;
                     if (tabId === 'rekap-jam' && b === 'rekap-jam') isActive = true;
+                    if (tabId === 'verifikasi' && b === 'verifikasi') isActive = true;
+                    if (tabId === 'ditolak' && b === 'ditolak') isActive = true;
 
+                    // Menggunakan ClassList agar properti display default tidak terganggu
                     if (isActive) {
-                        btn.className = 'w-full flex items-center px-4 py-3 bg-emerald-600 text-white rounded-lg transition font-medium shadow-sm';
+                        btn.classList.add('bg-emerald-600', 'text-white', 'shadow-sm');
+                        btn.classList.remove('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
                     } else {
-                        btn.className = 'w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium';
+                        btn.classList.add('text-gray-300', 'hover:bg-gray-700', 'hover:text-white');
+                        btn.classList.remove('bg-emerald-600', 'text-white', 'shadow-sm');
                     }
                 }
             });
@@ -1505,6 +1757,9 @@
                 populateRekapKelompokFilter();
                 applyAdminRekapFilter();
             }
+            
+            if (tabId === 'verifikasi') applyAdminVerifFilters();
+            if (tabId === 'ditolak') applyAdminTolakFilters();
 
             if (tabId === 'akun') {
                 const adminAkunTableBody = document.getElementById('admin-akun-table-body');
@@ -1533,6 +1788,20 @@
                         accountsData = data.accounts;
                     }
                 }
+
+                // Filter ulang untuk keamanan ganda (jika tab dibuka paksa)
+                if (currentUser && ['ver1ok', 'ver2ok', 'ver3ok'].includes(currentUser.username.toLowerCase())) {
+                    accountsData = accountsData.filter(acc => {
+                        if (acc.role === 'admin') return true;
+                        const info = ((acc.kelompok || '') + ' ' + (acc.fakultas || '')).toUpperCase();
+                        const uname = currentUser.username.toLowerCase();
+                        if (uname === 'ver1ok') return ['BIMBINGAN KONSELING', 'BIMBINGAN DAN KONSELING PENDIDIKAN ISLAM', 'MANAJEMEN PENDIDIKAN ISLAM', 'PENDIDIKAN AGAMA ISLAM', 'FISIKA', 'INGGRIS'].some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
+                        if (uname === 'ver2ok') return ['MADRASAH IBTIDAIYAH', 'BIOLOGI', 'MATEMATIKA', 'ANAK USIA DINI', 'ARAB'].some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
+                        if (uname === 'ver3ok') return info.includes('PONPES') || info.includes('MAGANG') || info.includes('DAKWAH');
+                        return false;
+                    });
+                }
+
                 applyAdminAkunFilters();
             } catch (err) {
                 console.error("Gagal memuat akun:", err);
@@ -2016,6 +2285,8 @@
         function applyFilters() {
             // Eksekusi filter tabel individu
             applyAdminMhsFilters();
+            applyAdminVerifFilters();
+            applyAdminTolakFilters();
             
             // Eksekusi pembaruan dashboard global (Kartu, Badge, & Chart)
             updateAdminGlobalStats();
@@ -2025,8 +2296,10 @@
             const filterInput = document.querySelector('.global-date-input');
             const filterDate = filterInput ? filterInput.value : '';
             
+            const validReports = mahasiswaReportsData;
+
             // 1. Dapatkan Data Laporan Sesuai Filter Tanggal Global
-            const globalMhs = filterDate ? mahasiswaReportsData.filter(r => r.tanggal === filterDate) : mahasiswaReportsData;
+            const globalMhs = filterDate ? validReports.filter(r => r.tanggal === filterDate) : validReports;
 
             // 2. Dapatkan Semua Akun Aktif Terdaftar
             const allMhs = accountsData.filter(a => a.role === 'mahasiswa');
@@ -2091,6 +2364,98 @@
             updateThemeUI('mengajar', allMengajar, repMengajar);
             updateThemeUI('dakwah', allDakwah, repDakwah);
             updateThemeUI('magang', allMagang, repMagang);
+
+            // =======================================================
+            // RENDER STATISTIK STATUS LAPORAN (VERIFIKASI & DIAKUI)
+            // =======================================================
+            let countVerified = 0;
+            let countUnverified = 0;
+            let countDiterima = 0;
+            let countDitolak = 0;
+
+            globalMhs.forEach(r => {
+                const parts = (r.rencana || '').split(' | ');
+                const status = parts[2] || 'DIAKUI';
+                const verif = parts[3] || 'UNVERIFIED';
+
+                if (verif === 'VERIFIED') countVerified++;
+                else countUnverified++;
+
+                if (status === 'TIDAK_DIAKUI') countDitolak++;
+                else countDiterima++;
+            });
+
+            const totalRep = globalMhs.length;
+            const calcPct = (val) => totalRep > 0 ? ((val / totalRep) * 100).toFixed(1).replace('.0', '') + '%' : '0%';
+
+            const elStatVerified = document.getElementById('stat-verified');
+            const elPctVerified = document.getElementById('pct-verified');
+            if (elStatVerified) elStatVerified.innerText = countVerified;
+            if (elPctVerified) elPctVerified.innerText = calcPct(countVerified);
+
+            const elStatUnverified = document.getElementById('stat-unverified');
+            const elPctUnverified = document.getElementById('pct-unverified');
+            if (elStatUnverified) elStatUnverified.innerText = countUnverified;
+            if (elPctUnverified) elPctUnverified.innerText = calcPct(countUnverified);
+
+            const elStatDiterima = document.getElementById('stat-diterima');
+            const elPctDiterima = document.getElementById('pct-diterima');
+            if (elStatDiterima) elStatDiterima.innerText = countDiterima;
+            if (elPctDiterima) elPctDiterima.innerText = calcPct(countDiterima);
+
+            const elStatDitolak = document.getElementById('stat-ditolak');
+            const elPctDitolak = document.getElementById('pct-ditolak');
+            if (elStatDitolak) elStatDitolak.innerText = countDitolak;
+            if (elPctDitolak) elPctDitolak.innerText = calcPct(countDitolak);
+
+            // =======================================================
+            // RENDER KARTU STATISTIK KELOMPOK & FAKULTAS (UNTUK SEMUA ADMIN)
+            // =======================================================
+            const verifContainer = document.getElementById('verifikator-stats-container');
+            
+            if (verifContainer) verifContainer.classList.remove('hidden');
+            const grid = document.getElementById('verifikator-cards-grid');
+            if (grid) {
+                grid.innerHTML = '';
+                const groupMap = {};
+                
+                // Mengelompokkan data berdasarkan Kelompok & Fakultas
+                allMhs.forEach(m => {
+                    const kelompok = m.kelompok && m.kelompok !== '-' ? m.kelompok : 'Tanpa Kelompok';
+                    const fakultas = m.fakultas && m.fakultas !== '-' ? m.fakultas : 'Tanpa Fakultas';
+                    const key = `${kelompok} | ${fakultas}`;
+
+                    if (!groupMap[key]) {
+                        groupMap[key] = { kelompok, fakultas, count: 0 };
+                    }
+                    groupMap[key].count++;
+                });
+
+                // Mengurutkan berdasarkan jumlah mahasiswa terbanyak
+                const sortedKeys = Object.keys(groupMap).sort((a, b) => groupMap[b].count - groupMap[a].count);
+
+                if (sortedKeys.length === 0) {
+                    grid.innerHTML = '<div class="col-span-full text-gray-500 text-sm italic border-l-4 border-yellow-400 bg-yellow-50 p-3 rounded">Tidak ada data mahasiswa ditemukan.</div>';
+                } else {
+                    sortedKeys.forEach(key => {
+                        const item = groupMap[key];
+                        const card = document.createElement('div');
+                        card.className = 'bg-white rounded-lg shadow-sm border border-blue-200 p-4 flex flex-col justify-between hover:shadow-md transition';
+                        card.innerHTML = `
+                            <div>
+                                <p class="text-sm font-bold text-gray-800 mb-1 leading-tight">${item.kelompok}</p>
+                                <p class="text-[10px] text-blue-700 uppercase font-bold bg-blue-50 border border-blue-100 px-2 py-0.5 rounded inline-block mb-3"><i class="fa-solid fa-building-columns mr-1"></i>${item.fakultas}</p>
+                            </div>
+                            <div class="flex justify-between items-end border-t border-gray-100 pt-3 mt-1">
+                                <span class="text-xs text-gray-500 font-medium">Total Mahasiswa</span>
+                                <span class="text-xl font-extrabold text-blue-600">${item.count} <i class="fa-solid fa-user ml-1 text-blue-300 text-sm"></i></span>
+                            </div>
+                        `;
+                        grid.appendChild(card);
+                    });
+                }
+            }
+            // =======================================================
 
             // 8. Update UI "Belum Lapor" dan Grafik
             updateUnreportedStatusUI(unreportedMhs, valTotalMhs);
@@ -2263,6 +2628,15 @@
             if (document.getElementById('search-mhs')) document.getElementById('search-mhs').value = '';
             if (document.getElementById('filter-jenis-mhs')) document.getElementById('filter-jenis-mhs').value = '';
             
+            if (document.getElementById('search-rekap')) document.getElementById('search-rekap').value = '';
+            if (document.getElementById('filter-kelompok-rekap')) document.getElementById('filter-kelompok-rekap').value = '';
+            
+            if (document.getElementById('search-verif')) document.getElementById('search-verif').value = '';
+            if (document.getElementById('filter-jenis-verif')) document.getElementById('filter-jenis-verif').value = '';
+
+            if (document.getElementById('search-tolak')) document.getElementById('search-tolak').value = '';
+            if (document.getElementById('filter-jenis-tolak')) document.getElementById('filter-jenis-tolak').value = '';
+            
             if (document.getElementById('search-akun')) document.getElementById('search-akun').value = '';
             if (document.getElementById('filter-role-akun')) document.getElementById('filter-role-akun').value = '';
             
@@ -2275,6 +2649,8 @@
             document.querySelectorAll('.items-per-page-select').forEach(el => el.value = val);
             currentPageMhs = 1;
             currentPageAkun = 1;
+            currentPageVerif = 1;
+            currentPageTolak = 1;
             applyFilters();
             if (accountsData.length > 0) applyAdminAkunFilters();
         }
@@ -2298,6 +2674,8 @@
             if (type === 'Mhs') renderAdminTableMahasiswa(filteredDataMhs);
             if (type === 'Akun') renderAdminTableAkun();
             if (type === 'Rekap') applyAdminRekapFilter();
+            if (type === 'Verif') renderAdminTableVerif(filteredDataVerif);
+            if (type === 'Tolak') renderAdminTableTolak(filteredDataTolak);
         }
 
         function sortData(data, type) {
@@ -2381,10 +2759,15 @@
                 const deskripsi = parts[1] || '';
                 const status = parts[2] || 'DIAKUI';
                 const isDiakui = status !== 'TIDAK_DIAKUI';
+                const isVerif = parts[3] === 'VERIFIED';
                 
                 const jamHtml = isDiakui 
                     ? `<div class="text-xs text-emerald-600 mt-1 font-medium"><i class="fa-regular fa-clock mr-1"></i>Durasi: ${r.keluhan} Jam</div>` 
                     : `<div class="text-xs text-red-500 mt-1 line-through"><i class="fa-regular fa-clock mr-1"></i>Durasi: ${r.keluhan} Jam</div><div class="text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded inline-block mt-0.5"><i class="fa-solid fa-xmark mr-1"></i>Ditolak</div>`;
+
+                const verifHtml = isVerif 
+                    ? `<div class="text-[10px] text-blue-600 font-bold mt-1 bg-blue-50 px-1.5 py-0.5 rounded inline-block"><i class="fa-solid fa-check-double mr-1"></i>Terverifikasi</div>` 
+                    : `<div class="text-[10px] text-gray-400 font-bold mt-1 bg-gray-50 px-1.5 py-0.5 rounded inline-block"><i class="fa-solid fa-hourglass-half mr-1"></i>Belum Verif</div>`;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
@@ -2401,7 +2784,7 @@
                     <td class="px-6 py-4">
                         <div class="text-sm font-semibold text-gray-800" title="${jenis}">${jenis}</div>
                         <div class="text-xs text-gray-500 mt-1 max-w-[200px] truncate" title="${deskripsi}">${deskripsi}</div>
-                        ${jamHtml}
+                        <div class="flex items-center space-x-2">${jamHtml}${verifHtml}</div>
                     </td>
                     <td class="px-6 py-4 text-center space-x-2">
                         <a href="${r.foto}" target="_blank" class="text-purple-500 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 p-2 rounded-full inline-block transition" title="Lihat Foto"><i class="fa-solid fa-image"></i></a>
@@ -2412,6 +2795,156 @@
             });
             
             renderPagination('pagination-mhs', totalPages, currentPageMhs, 'Mhs');
+        }
+
+        // =========================================================================
+        // FUNGSI LAPORAN DIVERIFIKASI & DITOLAK
+        // =========================================================================
+
+        function applyAdminVerifFilters() {
+            const searchTxt = document.getElementById('search-verif') ? document.getElementById('search-verif').value.toLowerCase() : '';
+            const filterJenis = document.getElementById('filter-jenis-verif') ? document.getElementById('filter-jenis-verif').value : '';
+
+            // Hanya ambil laporan yang status VERIFIED
+            filteredDataVerif = mahasiswaReportsData.filter(r => {
+                const parts = (r.rencana || '').split(' | ');
+                return parts[3] === 'VERIFIED';
+            });
+
+            if (searchTxt) {
+                filteredDataVerif = filteredDataVerif.filter(r => 
+                    (r.namaLengkap || r.username || '').toLowerCase().includes(searchTxt) || 
+                    (r.kelompok || '').toLowerCase().includes(searchTxt) ||
+                    (r.rencana || '').toLowerCase().includes(searchTxt)
+                );
+            }
+            if (filterJenis) {
+                filteredDataVerif = filteredDataVerif.filter(r => (r.rencana || '').split(' | ')[0] === filterJenis);
+            }
+
+            currentPageVerif = 1;
+            renderAdminTableVerif(filteredDataVerif);
+        }
+
+        function renderAdminTableVerif(data) {
+            const tbody = document.getElementById('admin-verif-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Tidak ada data laporan yang sudah diverifikasi</td></tr>';
+                renderPagination('pagination-verif', 0, 1, 'Verif');
+                return;
+            }
+
+            const sortedData = sortData([...data], 'Verif');
+            const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+            const startIndex = (currentPageVerif - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = sortedData.slice(startIndex, endIndex);
+
+            pageData.forEach(r => {
+                const parts = (r.rencana || '').split(' | ');
+                const jenis = parts[0];
+                const deskripsi = parts[1] || '';
+                const jam = r.keluhan || 0;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">${r.tanggal}</td>
+                    <td class="px-6 py-4 font-medium text-blue-700">
+                        <div>${r.namaLengkap || r.username}</div>
+                        <div class="text-xs text-gray-500 font-normal">@${r.username}</div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-700">${r.kelompok || '-'}</td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-semibold text-gray-800" title="${jenis}">${jenis}</div>
+                        <div class="text-xs text-gray-500 mt-1 max-w-[200px] truncate" title="${deskripsi}">${deskripsi}</div>
+                        <div class="text-xs text-emerald-600 mt-1 font-medium"><i class="fa-regular fa-clock mr-1"></i>Durasi: ${jam} Jam</div>
+                    </td>
+                    <td class="px-6 py-4 text-center space-x-2 whitespace-nowrap">
+                        <span class="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded inline-block mr-2"><i class="fa-solid fa-check-double mr-1"></i>VERIFIED</span>
+                        <a href="${r.foto}" target="_blank" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 p-2 rounded-full inline-block transition" title="Lihat Foto"><i class="fa-solid fa-image"></i></a>
+                        <button type="button" onclick="openRincianModal('${r.username}')" class="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition" title="Lihat Profil & Rincian"><i class="fa-solid fa-user-gear"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            renderPagination('pagination-verif', totalPages, currentPageVerif, 'Verif');
+        }
+
+        function applyAdminTolakFilters() {
+            const searchTxt = document.getElementById('search-tolak') ? document.getElementById('search-tolak').value.toLowerCase() : '';
+            const filterJenis = document.getElementById('filter-jenis-tolak') ? document.getElementById('filter-jenis-tolak').value : '';
+
+            // Hanya ambil laporan yang status TIDAK_DIAKUI
+            filteredDataTolak = mahasiswaReportsData.filter(r => {
+                const parts = (r.rencana || '').split(' | ');
+                return parts[2] === 'TIDAK_DIAKUI';
+            });
+
+            if (searchTxt) {
+                filteredDataTolak = filteredDataTolak.filter(r => 
+                    (r.namaLengkap || r.username || '').toLowerCase().includes(searchTxt) || 
+                    (r.kelompok || '').toLowerCase().includes(searchTxt) ||
+                    (r.rencana || '').toLowerCase().includes(searchTxt)
+                );
+            }
+            if (filterJenis) {
+                filteredDataTolak = filteredDataTolak.filter(r => (r.rencana || '').split(' | ')[0] === filterJenis);
+            }
+
+            currentPageTolak = 1;
+            renderAdminTableTolak(filteredDataTolak);
+        }
+
+        function renderAdminTableTolak(data) {
+            const tbody = document.getElementById('admin-tolak-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Tidak ada laporan yang ditolak</td></tr>';
+                renderPagination('pagination-tolak', 0, 1, 'Tolak');
+                return;
+            }
+
+            const sortedData = sortData([...data], 'Tolak');
+            const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+            const startIndex = (currentPageTolak - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = sortedData.slice(startIndex, endIndex);
+
+            pageData.forEach(r => {
+                const parts = (r.rencana || '').split(' | ');
+                const jenis = parts[0];
+                const deskripsi = parts[1] || '';
+                const jam = r.keluhan || 0;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">${r.tanggal}</td>
+                    <td class="px-6 py-4 font-medium text-red-700">
+                        <div>${r.namaLengkap || r.username}</div>
+                        <div class="text-xs text-gray-500 font-normal">@${r.username}</div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-700">${r.kelompok || '-'}</td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-semibold text-gray-800" title="${jenis}">${jenis}</div>
+                        <div class="text-xs text-gray-500 mt-1 max-w-[200px] truncate" title="${deskripsi}">${deskripsi}</div>
+                        <div class="text-xs text-red-500 mt-1 line-through"><i class="fa-regular fa-clock mr-1"></i>Durasi: ${jam} Jam</div>
+                    </td>
+                    <td class="px-6 py-4 text-center space-x-2 whitespace-nowrap">
+                        <span class="text-[10px] text-red-600 font-bold bg-red-100 px-2 py-1 rounded inline-block mr-2"><i class="fa-solid fa-xmark mr-1"></i>DITOLAK</span>
+                        <a href="${r.foto}" target="_blank" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-full inline-block transition" title="Lihat Foto"><i class="fa-solid fa-image"></i></a>
+                        <button type="button" onclick="openRincianModal('${r.username}')" class="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full transition" title="Lihat Profil & Rincian"><i class="fa-solid fa-user-gear"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            renderPagination('pagination-tolak', totalPages, currentPageTolak, 'Tolak');
         }
 
         // =========================================================================
@@ -2443,6 +2976,7 @@
 
         function applyAdminRekapFilter() {
             const filterKelompok = document.getElementById('filter-kelompok-rekap') ? document.getElementById('filter-kelompok-rekap').value : '';
+            const searchTxt = document.getElementById('search-rekap') ? document.getElementById('search-rekap').value.toLowerCase() : '';
             
             // 1. Ambil daftar akun mahasiswa
             let mhsList = accountsData.filter(a => a.role === 'mahasiswa');
@@ -2451,9 +2985,18 @@
             if (filterKelompok) {
                 mhsList = mhsList.filter(m => m.kelompok === filterKelompok);
             }
+
+            // 2.5 Filter pencarian nama/username
+            if (searchTxt) {
+                mhsList = mhsList.filter(m => 
+                    (m.namaLengkap || '').toLowerCase().includes(searchTxt) || 
+                    (m.username || '').toLowerCase().includes(searchTxt)
+                );
+            }
             
             // 3. Kalkulasi jam (keluhan/durasi) per mahasiswa dari mahasiswaReportsData
             const jamMap = {};
+            
             mahasiswaReportsData.forEach(r => {
                 if (!jamMap[r.username]) jamMap[r.username] = 0;
                 
@@ -2533,12 +3076,70 @@
                             ${persentase.replace('.', ',')}%
                         </span>
                     </td>
-                    <td class="px-4 py-3 text-center">
-                        <button onclick="openRincianModal('${m.username}')" class="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 px-3 py-1.5 rounded text-xs font-bold transition shadow-sm"><i class="fa-solid fa-list mr-1"></i> Detail</button>
+                    <td class="px-4 py-3 text-center space-x-1">
+                        <button onclick="openRincianModal('${m.username}')" class="bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white border border-blue-200 px-3 py-1.5 rounded text-xs font-bold transition shadow-sm"><i class="fa-solid fa-list mr-1"></i> Rincian & Verifikasi</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        async function toggleVerifikasiKKN(username, isVerified) {
+            if (isVerified) {
+                if (!confirm(`Batalkan verifikasi penyelesaian KKN untuk mahasiswa @${username}?`)) return;
+                // Cari dummy report
+                const dummyReport = mahasiswaReportsData.find(r => r.username === username && isVerifReport(r));
+                if (dummyReport) {
+                    try {
+                        if (USE_MOCK) {
+                            mockMahasiswaReports = mockMahasiswaReports.filter(x => String(x.id) !== String(dummyReport.id));
+                        } else {
+                            await fetch(SCRIPT_URL, {
+                                method: 'POST',
+                                body: JSON.stringify({ action: 'deleteMahasiswaReport', id: dummyReport.id }),
+                                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                            });
+                        }
+                        await loadDataFromServer();
+                    } catch (err) {
+                        alert("Gagal membatalkan verifikasi: " + err.message);
+                    }
+                }
+            } else {
+                if (!confirm(`Verifikasi bahwa mahasiswa @${username} telah sah menyelesaikan program KKN?`)) return;
+                const user = accountsData.find(u => u.username === username);
+                if (!user) return;
+
+                const payload = {
+                    id: Date.now(),
+                    username: username,
+                    kelompok: user.kelompok,
+                    tanggal: new Date().toISOString().split('T')[0],
+                    // Sisipkan tag khusus di deskripsi tanpa merusak jam (0 jam)
+                    rencana: 'Verifikasi Sistem | [VERIFIED_KKN] | DIAKUI',
+                    keluhan: 0,
+                    foto: '-',
+                    timestamp: new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) + ' WIB'
+                };
+
+                try {
+                    if (USE_MOCK) {
+                        mockMahasiswaReports.push(payload);
+                    } else {
+                        await fetch(SCRIPT_URL, {
+                            method: 'POST',
+                            body: JSON.stringify({ action: 'addMahasiswaReport', data: payload }),
+                            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                        });
+                    }
+                    await loadDataFromServer();
+                } catch (err) {
+                    alert("Gagal memverifikasi: " + err.message);
+                }
+            }
+            
+            // Perbarui tampilan modal rincian setelah aksi verifikasi
+            openRincianModal(username);
         }
 
         function openRincianModal(username) {
@@ -2551,9 +3152,10 @@
 
             // Cari detail user
             const user = accountsData.find(u => u.username === username);
+
             if (user && namaEl) namaEl.innerHTML = `${user.namaLengkap || user.username} <span class="text-xs text-gray-500 font-normal">(@${user.username})</span>`;
 
-            // Filter laporan milik user ini saja
+            // Filter laporan milik user
             const reports = mahasiswaReportsData.filter(r => r.username === username);
             
             // Urutkan berdasarkan tanggal terbaru
@@ -2573,6 +3175,7 @@
                     const deskripsi = parts[1] || '-';
                     const status = parts[2] || 'DIAKUI';
                     const isDiakui = status !== 'TIDAK_DIAKUI';
+                    const isVerif = parts[3] === 'VERIFIED';
 
                     if (isDiakui) totalJam += jam;
 
@@ -2582,11 +3185,19 @@
                     
                     const checkedAttr = isDiakui ? 'checked' : '';
                     const toggleHtml = `
-                        <label class="inline-flex items-center cursor-pointer justify-center">
-                          <input type="checkbox" value="" class="sr-only peer" ${checkedAttr} onchange="toggleReportStatus('${r.id}', this.checked)">
-                          <div class="relative w-9 h-5 bg-red-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
-                          <span class="ms-2 text-[10px] font-bold ${isDiakui ? 'text-emerald-600' : 'text-red-500'} w-12 text-left">${isDiakui ? 'DIAKUI' : 'DITOLAK'}</span>
-                        </label>
+                        <div class="flex flex-col items-start space-y-2 py-1">
+                            <label class="inline-flex items-center cursor-pointer">
+                              <input type="checkbox" value="" class="sr-only peer" ${checkedAttr} onchange="toggleReportStatus('${r.id}', this.checked)">
+                              <div class="relative w-9 h-5 bg-red-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                              <span class="ms-2 text-[10px] font-bold ${isDiakui ? 'text-emerald-600' : 'text-red-500'} w-14 text-left">${isDiakui ? 'DIAKUI' : 'DITOLAK'}</span>
+                            </label>
+                            
+                            <label class="inline-flex items-center cursor-pointer">
+                              <input type="checkbox" value="" class="sr-only peer" ${isVerif ? 'checked' : ''} onchange="toggleReportVerification('${r.id}', this.checked)">
+                              <div class="relative w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                              <span class="ms-2 text-[10px] font-bold ${isVerif ? 'text-blue-600' : 'text-gray-500'} w-14 text-left">${isVerif ? 'VERIFIED' : 'UNVERIF'}</span>
+                            </label>
+                        </div>
                     `;
 
                     const tr = document.createElement('tr');
@@ -2617,9 +3228,10 @@
             const jenis = parts[0];
             const deskripsi = parts[1] || '';
             const newStatus = isDiakui ? 'DIAKUI' : 'TIDAK_DIAKUI';
+            const verifStatus = parts[3] || 'UNVERIFIED';
             
             // Simpan status baru
-            r.rencana = `${jenis} | ${deskripsi} | ${newStatus}`;
+            r.rencana = `${jenis} | ${deskripsi} | ${newStatus} | ${verifStatus}`;
 
             // Perbarui UI secara langsung (Optimistic Update)
             openRincianModal(r.username);
@@ -2647,6 +3259,46 @@
             }
         }
 
+        function toggleReportVerification(id, isVerified) {
+            const r = mahasiswaReportsData.find(x => String(x.id) === String(id));
+            if (!r) return;
+
+            const parts = (r.rencana || '').split(' | ');
+            const jenis = parts[0];
+            const deskripsi = parts[1] || '';
+            const status = parts[2] || 'DIAKUI';
+            const newVerif = isVerified ? 'VERIFIED' : 'UNVERIFIED';
+            
+            // Simpan status baru
+            r.rencana = `${jenis} | ${deskripsi} | ${status} | ${newVerif}`;
+
+            // Perbarui UI secara langsung (Optimistic Update)
+            openRincianModal(r.username);
+            applyAdminMhsFilters(); 
+            applyAdminVerifFilters(); // Perbarui juga tabel verif
+            applyAdminTolakFilters(); // Perbarui juga tabel tolak
+
+            // Kirim ke backend di latar belakang
+            const payload = {
+                id: r.id,
+                tanggal: r.tanggal,
+                rencana: r.rencana,
+                keluhan: r.keluhan,
+                foto: r.foto
+            };
+
+            if (USE_MOCK) {
+                const idx = mockMahasiswaReports.findIndex(x => String(x.id) === String(r.id));
+                if (idx > -1) mockMahasiswaReports[idx].rencana = r.rencana;
+            } else {
+                fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: 'editMahasiswaReport', data: payload }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                }).catch(e => console.error("Gagal mengupdate verifikasi:", e));
+            }
+        }
+
         function closeRincianModal() {
             const modal = document.getElementById('rincian-modal');
             if (modal) modal.classList.add('hidden');
@@ -2666,9 +3318,11 @@
             let tableContainerId = '';
             if(type === 'Mhs') tableContainerId = 'admin-mhs-container';
             if(type === 'Akun') tableContainerId = 'admin-akun-container';
+            if(type === 'Verif') tableContainerId = 'admin-verif-table-body'; // Cek keberadaan tbody
+            if(type === 'Tolak') tableContainerId = 'admin-tolak-table-body'; // Cek keberadaan tbody
             
             const tableContainer = document.getElementById(tableContainerId);
-            if(tableContainer && !tableContainer.classList.contains('hidden')) {
+            if(tableContainer) {
                 container.classList.remove('hidden');
             }
             container.dataset.active = 'true';
@@ -2856,6 +3510,12 @@
             } else if (type === 'Akun') {
                 currentPageAkun += offset;
                 renderAdminTableAkun();
+            } else if (type === 'Verif') {
+                currentPageVerif += offset;
+                renderAdminTableVerif(filteredDataVerif);
+            } else if (type === 'Tolak') {
+                currentPageTolak += offset;
+                renderAdminTableTolak(filteredDataTolak);
             }
         }
 
@@ -2893,6 +3553,7 @@
         }
 
         function renderMahasiswaDashboard() {
+            // Sembunyikan history laporan verifikasi dari mahasiswa
             const myReports = mahasiswaReportsData.filter(r => r.username === currentUser.username);
             const tbody = document.getElementById('mhs-table-body');
             const tfoot = document.getElementById('mhs-table-footer');
@@ -2920,31 +3581,44 @@
                 const deskripsi = parts[1] || '';
                 const status = parts[2] || 'DIAKUI';
                 const isDiakui = status !== 'TIDAK_DIAKUI';
+                const isVerif = parts[3] === 'VERIFIED';
 
                 if (isDiakui) totalJam += Number(r.keluhan || 0); 
 
                 const jamHtml = isDiakui 
                     ? `<div class="text-xs text-purple-600 mt-1 font-medium"><i class="fa-regular fa-clock mr-1"></i>${r.keluhan} Jam</div>` 
                     : `<div class="text-xs text-red-500 mt-1 line-through"><i class="fa-regular fa-clock mr-1"></i>${r.keluhan} Jam</div><div class="text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded inline-block mt-0.5"><i class="fa-solid fa-xmark mr-1"></i>Ditolak</div>`;
+                    
+                const verifBadge = isVerif 
+                    ? `<span class="ml-2 text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold"><i class="fa-solid fa-lock mr-1"></i>Telah Terverifikasi</span>` 
+                    : '';
+
+                const actionHtml = isVerif
+                    ? `<span class="text-[11px] text-gray-500 font-bold bg-gray-100 border border-gray-200 px-2 py-1 rounded inline-block"><i class="fa-solid fa-lock mr-1"></i>Terkunci</span>`
+                    : `<button type="button" onclick="editMahasiswaReport('${r.id}')" class="text-yellow-500 hover:text-yellow-700 bg-yellow-50 hover:bg-yellow-100 p-2 rounded-full transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
+                       <button type="button" onclick="deleteMahasiswaReport('${r.id}', this)" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-full transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>`;
+
+                const checkboxHtml = isVerif
+                    ? `<i class="fa-solid fa-lock text-gray-300 text-sm" title="Terkunci (Sudah diverifikasi)"></i>`
+                    : `<input type="checkbox" class="row-checkbox-mhs" value="${r.id}" onchange="updateBulkActionStateMhs()">`;
 
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="px-4 py-3 text-center">
-                        <input type="checkbox" class="row-checkbox-mhs" value="${r.id}" onchange="updateBulkActionStateMhs()">
+                        ${checkboxHtml}
                     </td>
                     <td class="px-4 py-3 whitespace-nowrap text-gray-600">${r.tanggal}</td>
                     <td class="px-4 py-3 whitespace-nowrap text-xs font-mono text-gray-500 bg-gray-50"><i class="fa-regular fa-clock mr-1"></i>${getTimestampStr(r)}</td>
                     <td class="px-4 py-3 text-gray-700">
-                        <div class="font-bold text-gray-800 truncate" title="${jenis}">${jenis}</div>
-                        <div class="text-xs text-gray-600 mt-0.5 max-w-[200px] truncate" title="${deskripsi}">${deskripsi}</div>
+                        <div class="font-bold text-gray-800 flex items-center"><span class="truncate max-w-[200px]" title="${jenis}">${jenis}</span> ${verifBadge}</div>
+                        <div class="text-xs text-gray-600 mt-0.5 max-w-[250px] whitespace-normal" title="${deskripsi}">${deskripsi}</div>
                         ${jamHtml}
                     </td>
                     <td class="px-4 py-3 text-center">
                         <a href="${r.foto}" target="_blank" class="text-purple-500 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 p-2 rounded-full inline-block transition" title="Lihat Foto"><i class="fa-solid fa-image"></i></a>
                     </td>
                     <td class="px-4 py-3 text-center space-x-2">
-                        <button type="button" onclick="editMahasiswaReport('${r.id}')" class="text-yellow-500 hover:text-yellow-700 bg-yellow-50 hover:bg-yellow-100 p-2 rounded-full transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-                        <button type="button" onclick="deleteMahasiswaReport('${r.id}', this)" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-full transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>
+                        ${actionHtml}
                     </td>
                 `;
                 tbody.appendChild(tr);
@@ -2978,8 +3652,9 @@
             // Pertahankan status persetujuan yang sudah ada jika sedang diedit
             const existingReport = mahasiswaReportsData.find(x => String(x.id) === String(id));
             const existingStatus = existingReport ? (existingReport.rencana || '').split(' | ')[2] || 'DIAKUI' : 'DIAKUI';
+            const existingVerif = existingReport ? (existingReport.rencana || '').split(' | ')[3] || 'UNVERIFIED' : 'UNVERIFIED';
             
-            const combinedRencana = `${inputJenis} | ${inputDeskripsi} | ${existingStatus}`;
+            const combinedRencana = `${inputJenis} | ${inputDeskripsi} | ${existingStatus} | ${existingVerif}`;
 
             const payload = {
                 id: id ? parseInt(id) : Date.now(), 
