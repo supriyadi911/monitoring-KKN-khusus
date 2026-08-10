@@ -386,6 +386,9 @@
                     <button onclick="switchAdminTab('rekap-jam')" id="tab-btn-rekap-jam" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
                         <i class="fa-solid fa-stopwatch w-6 text-center"></i> Rekap Jumlah Jam
                     </button>
+                    <button onclick="switchAdminTab('belum-verif')" id="tab-btn-belum-verif" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
+                        <i class="fa-solid fa-hourglass-half w-6 text-center"></i> Belum Diverifikasi
+                    </button>
                     <button onclick="switchAdminTab('verifikasi')" id="tab-btn-verifikasi" class="w-full flex items-center px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
                         <i class="fa-solid fa-check-double w-6 text-center"></i> Laporan Diverifikasi
                     </button>
@@ -823,6 +826,63 @@
                 </div>
 
                 <!-- -----------------------------------------
+                     TAB LAPORAN BELUM DIVERIFIKASI
+                ------------------------------------------ -->
+                <div id="admin-tab-belum-verif" class="hidden space-y-6">
+                    <div class="flex justify-between items-center mb-6">
+                        <h1 class="text-2xl font-bold text-gray-800 text-gray-600"><i class="fa-solid fa-hourglass-half mr-2"></i>Daftar Laporan Belum Diverifikasi</h1>
+                    </div>
+
+                    <!-- Toolbar Pencarian & Filter Belum Verifikasi -->
+                    <div class="flex flex-col sm:flex-row gap-4 mb-4">
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                <i class="fa-solid fa-search text-gray-400"></i>
+                            </div>
+                            <input type="text" id="search-belum-verif" onkeyup="applyAdminBelumVerifFilters()" placeholder="Cari nama mahasiswa, kelompok, atau deskripsi..." class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none text-sm shadow-sm">
+                        </div>
+                        <div class="w-full sm:w-56">
+                            <select id="filter-jenis-belum-verif" onchange="applyAdminBelumVerifFilters()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-gray-500 outline-none shadow-sm text-gray-700">
+                                <option value="">Semua Jenis Laporan</option>
+                                <option value="Giat Harian">Giat Harian</option>
+                                <option value="Laporan Akhir">Laporan Akhir</option>
+                            </select>
+                        </div>
+                        <div class="w-full sm:w-32">
+                            <select onchange="changeItemsPerPage(this.value)" class="items-per-page-select w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-gray-500 outline-none shadow-sm text-gray-700">
+                                <option value="20">20 Baris</option>
+                                <option value="50">50 Baris</option>
+                                <option value="100">100 Baris</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Tabel Data Laporan Belum Diverifikasi -->
+                    <div class="bg-white rounded-lg shadow-sm border overflow-hidden">
+                        <div class="px-6 py-4 border-b bg-gray-100">
+                            <h3 class="font-bold text-gray-700">Laporan Menunggu Verifikasi Admin</h3>
+                        </div>
+                        <div class="overflow-x-auto">
+                            <table class="w-full whitespace-nowrap">
+                                <thead class="bg-gray-100 text-gray-600 text-sm">
+                                    <tr>
+                                        <th class="px-6 py-3 text-left font-medium cursor-pointer hover:bg-gray-200" onclick="handleSort('BelumVerif', 'tanggal')">Tanggal <i id="sort-BelumVerif-tanggal" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-left font-medium cursor-pointer hover:bg-gray-200" onclick="handleSort('BelumVerif', 'namaLengkap')">Mahasiswa <i id="sort-BelumVerif-namaLengkap" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-left font-medium cursor-pointer hover:bg-gray-200" onclick="handleSort('BelumVerif', 'kelompok')">Kelompok <i id="sort-BelumVerif-kelompok" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-left font-medium cursor-pointer hover:bg-gray-200" onclick="handleSort('BelumVerif', 'rencana')">Kegiatan <i id="sort-BelumVerif-rencana" class="fa-solid fa-sort ml-1 text-gray-400"></i></th>
+                                        <th class="px-6 py-3 text-center font-medium">Status & Aksi</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="admin-belum-verif-table-body" class="bg-white divide-y divide-gray-200 text-sm">
+                                    <!-- Data injected via JS -->
+                                </tbody>
+                            </table>
+                        </div>
+                        <div id="pagination-belum-verif" data-active="false" class="hidden flex justify-between items-center px-6 py-3 bg-gray-50 border-t"></div>
+                    </div>
+                </div>
+
+                <!-- -----------------------------------------
                      TAB LAPORAN DITOLAK
                 ------------------------------------------ -->
                 <div id="admin-tab-ditolak" class="hidden space-y-6">
@@ -1205,10 +1265,12 @@
         let filteredDataMhs = [];
         let filteredDataAkun = [];
         let filteredDataVerif = [];
+        let filteredDataBelumVerif = [];
         let filteredDataTolak = [];
         let currentPageMhs = 1;
         let currentPageAkun = 1;
         let currentPageVerif = 1;
+        let currentPageBelumVerif = 1;
         let currentPageTolak = 1;
         let itemsPerPage = 20;
         let currentUnreportedMhs = [];
@@ -1219,6 +1281,7 @@
             Akun: { col: 'username', dir: 'asc' },
             Rekap: { col: 'namaLengkap', dir: 'asc' },
             Verif: { col: 'tanggal', dir: 'desc' },
+            BelumVerif: { col: 'tanggal', dir: 'desc' },
             Tolak: { col: 'tanggal', dir: 'desc' }
         };
 
@@ -1657,13 +1720,13 @@
                         
                         // Pemisahan berdasarkan penugasan yang diberikan
                         if (uname === 'ver1ok') {
-                            const m1 = ['BIMBINGAN KONSELING', 'BIMBINGAN DAN KONSELING PENDIDIKAN ISLAM', 'MANAJEMEN PENDIDIKAN ISLAM', 'PENDIDIKAN AGAMA ISLAM', 'FISIKA', 'INGGRIS'];
+                            const m1 = ['BIMBINGAN KONSELING', 'BIMBINGAN DAN KONSELING PENDIDIKAN ISLAM', 'PENDIDIKAN AGAMA ISLAM', 'FISIKA', 'INGGRIS'];
                             isAllowed = m1.some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
                         } else if (uname === 'ver2ok') {
-                            const m2 = ['MADRASAH IBTIDAIYAH', 'BIOLOGI', 'MATEMATIKA', 'ANAK USIA DINI', 'ARAB'];
+                            const m2 = ['MADRASAH IBTIDAIYAH', 'BIOLOGI', 'MATEMATIKA', 'ARAB'];
                             isAllowed = m2.some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
                         } else if (uname === 'ver3ok') {
-                            isAllowed = info.includes('PONPES') || info.includes('MAGANG') || info.includes('DAKWAH');
+                            isAllowed = info.includes('PONPES') || info.includes('MAGANG') || info.includes('DAKWAH') || info.includes('ANAK USIA DINI') || info.includes('MANAJEMEN PENDIDIKAN ISLAM');
                         }
                         
                         if (isAllowed) allowedStudents.add(acc.username);
@@ -1706,8 +1769,8 @@
         // =========================================================================
 
         function switchAdminTab(tabId, theme = 'ALL') {
-            const tabs = ['dashboard', 'mahasiswa', 'akun', 'rekap-jam', 'verifikasi', 'ditolak'];
-            const buttons = ['dashboard', 'mhs-ponpes', 'mhs-mengajar', 'mhs-dakwah', 'mhs-magang', 'akun', 'rekap-jam', 'verifikasi', 'ditolak'];
+            const tabs = ['dashboard', 'mahasiswa', 'akun', 'rekap-jam', 'belum-verif', 'verifikasi', 'ditolak'];
+            const buttons = ['dashboard', 'mhs-ponpes', 'mhs-mengajar', 'mhs-dakwah', 'mhs-magang', 'akun', 'rekap-jam', 'belum-verif', 'verifikasi', 'ditolak'];
             
             tabs.forEach(t => {
                 const content = document.getElementById('admin-tab-' + t);
@@ -1725,6 +1788,7 @@
                     if (tabId === 'akun' && b === 'akun') isActive = true;
                     if (tabId === 'mahasiswa' && b === 'mhs-' + theme.toLowerCase()) isActive = true;
                     if (tabId === 'rekap-jam' && b === 'rekap-jam') isActive = true;
+                    if (tabId === 'belum-verif' && b === 'belum-verif') isActive = true;
                     if (tabId === 'verifikasi' && b === 'verifikasi') isActive = true;
                     if (tabId === 'ditolak' && b === 'ditolak') isActive = true;
 
@@ -1758,6 +1822,7 @@
                 applyAdminRekapFilter();
             }
             
+            if (tabId === 'belum-verif') applyAdminBelumVerifFilters();
             if (tabId === 'verifikasi') applyAdminVerifFilters();
             if (tabId === 'ditolak') applyAdminTolakFilters();
 
@@ -1795,9 +1860,9 @@
                         if (acc.role === 'admin') return true;
                         const info = ((acc.kelompok || '') + ' ' + (acc.fakultas || '')).toUpperCase();
                         const uname = currentUser.username.toLowerCase();
-                        if (uname === 'ver1ok') return ['BIMBINGAN KONSELING', 'BIMBINGAN DAN KONSELING PENDIDIKAN ISLAM', 'MANAJEMEN PENDIDIKAN ISLAM', 'PENDIDIKAN AGAMA ISLAM', 'FISIKA', 'INGGRIS'].some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
-                        if (uname === 'ver2ok') return ['MADRASAH IBTIDAIYAH', 'BIOLOGI', 'MATEMATIKA', 'ANAK USIA DINI', 'ARAB'].some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
-                        if (uname === 'ver3ok') return info.includes('PONPES') || info.includes('MAGANG') || info.includes('DAKWAH');
+                        if (uname === 'ver1ok') return ['BIMBINGAN KONSELING', 'BIMBINGAN DAN KONSELING PENDIDIKAN ISLAM', 'PENDIDIKAN AGAMA ISLAM', 'FISIKA', 'INGGRIS'].some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
+                        if (uname === 'ver2ok') return ['MADRASAH IBTIDAIYAH', 'BIOLOGI', 'MATEMATIKA', 'ARAB'].some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
+                        if (uname === 'ver3ok') return info.includes('PONPES') || info.includes('MAGANG') || info.includes('DAKWAH') || info.includes('ANAK USIA DINI') || info.includes('MANAJEMEN PENDIDIKAN ISLAM');
                         return false;
                     });
                 }
@@ -2285,6 +2350,7 @@
         function applyFilters() {
             // Eksekusi filter tabel individu
             applyAdminMhsFilters();
+            applyAdminBelumVerifFilters();
             applyAdminVerifFilters();
             applyAdminTolakFilters();
             
@@ -2631,6 +2697,9 @@
             if (document.getElementById('search-rekap')) document.getElementById('search-rekap').value = '';
             if (document.getElementById('filter-kelompok-rekap')) document.getElementById('filter-kelompok-rekap').value = '';
             
+            if (document.getElementById('search-belum-verif')) document.getElementById('search-belum-verif').value = '';
+            if (document.getElementById('filter-jenis-belum-verif')) document.getElementById('filter-jenis-belum-verif').value = '';
+            
             if (document.getElementById('search-verif')) document.getElementById('search-verif').value = '';
             if (document.getElementById('filter-jenis-verif')) document.getElementById('filter-jenis-verif').value = '';
 
@@ -2650,6 +2719,7 @@
             currentPageMhs = 1;
             currentPageAkun = 1;
             currentPageVerif = 1;
+            currentPageBelumVerif = 1;
             currentPageTolak = 1;
             applyFilters();
             if (accountsData.length > 0) applyAdminAkunFilters();
@@ -2674,6 +2744,7 @@
             if (type === 'Mhs') renderAdminTableMahasiswa(filteredDataMhs);
             if (type === 'Akun') renderAdminTableAkun();
             if (type === 'Rekap') applyAdminRekapFilter();
+            if (type === 'BelumVerif') renderAdminTableBelumVerif(filteredDataBelumVerif);
             if (type === 'Verif') renderAdminTableVerif(filteredDataVerif);
             if (type === 'Tolak') renderAdminTableTolak(filteredDataTolak);
         }
@@ -2798,8 +2869,81 @@
         }
 
         // =========================================================================
-        // FUNGSI LAPORAN DIVERIFIKASI & DITOLAK
+        // FUNGSI LAPORAN DIVERIFIKASI, BELUM DIVERIFIKASI, & DITOLAK
         // =========================================================================
+
+        function applyAdminBelumVerifFilters() {
+            const searchTxt = document.getElementById('search-belum-verif') ? document.getElementById('search-belum-verif').value.toLowerCase() : '';
+            const filterJenis = document.getElementById('filter-jenis-belum-verif') ? document.getElementById('filter-jenis-belum-verif').value : '';
+
+            // Hanya ambil laporan yang statusnya BUKAN VERIFIED
+            filteredDataBelumVerif = mahasiswaReportsData.filter(r => {
+                const parts = (r.rencana || '').split(' | ');
+                return parts[3] !== 'VERIFIED';
+            });
+
+            if (searchTxt) {
+                filteredDataBelumVerif = filteredDataBelumVerif.filter(r => 
+                    (r.namaLengkap || r.username || '').toLowerCase().includes(searchTxt) || 
+                    (r.kelompok || '').toLowerCase().includes(searchTxt) ||
+                    (r.rencana || '').toLowerCase().includes(searchTxt)
+                );
+            }
+            if (filterJenis) {
+                filteredDataBelumVerif = filteredDataBelumVerif.filter(r => (r.rencana || '').split(' | ')[0] === filterJenis);
+            }
+
+            currentPageBelumVerif = 1;
+            renderAdminTableBelumVerif(filteredDataBelumVerif);
+        }
+
+        function renderAdminTableBelumVerif(data) {
+            const tbody = document.getElementById('admin-belum-verif-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '';
+            
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="px-6 py-4 text-center text-gray-500">Tidak ada laporan yang belum diverifikasi</td></tr>';
+                renderPagination('pagination-belum-verif', 0, 1, 'BelumVerif');
+                return;
+            }
+
+            const sortedData = sortData([...data], 'BelumVerif');
+            const totalPages = Math.ceil(sortedData.length / itemsPerPage);
+            const startIndex = (currentPageBelumVerif - 1) * itemsPerPage;
+            const endIndex = startIndex + itemsPerPage;
+            const pageData = sortedData.slice(startIndex, endIndex);
+
+            pageData.forEach(r => {
+                const parts = (r.rencana || '').split(' | ');
+                const jenis = parts[0];
+                const deskripsi = parts[1] || '';
+                const jam = r.keluhan || 0;
+
+                const tr = document.createElement('tr');
+                tr.innerHTML = `
+                    <td class="px-6 py-4 whitespace-nowrap text-gray-600">${r.tanggal}</td>
+                    <td class="px-6 py-4 font-medium text-gray-700">
+                        <div>${r.namaLengkap || r.username}</div>
+                        <div class="text-xs text-gray-500 font-normal">@${r.username}</div>
+                    </td>
+                    <td class="px-6 py-4 text-gray-700">${r.kelompok || '-'}</td>
+                    <td class="px-6 py-4">
+                        <div class="text-sm font-semibold text-gray-800" title="${jenis}">${jenis}</div>
+                        <div class="text-xs text-gray-500 mt-1 max-w-[200px] truncate" title="${deskripsi}">${deskripsi}</div>
+                        <div class="text-xs text-emerald-600 mt-1 font-medium"><i class="fa-regular fa-clock mr-1"></i>Durasi: ${jam} Jam</div>
+                    </td>
+                    <td class="px-6 py-4 text-center space-x-2 whitespace-nowrap">
+                        <span class="text-[10px] text-gray-600 font-bold bg-gray-100 px-2 py-1 rounded inline-block mr-2"><i class="fa-solid fa-hourglass-half mr-1"></i>BELUM VERIF</span>
+                        <a href="${r.foto}" target="_blank" class="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 p-2 rounded-full inline-block transition" title="Lihat Foto"><i class="fa-solid fa-image"></i></a>
+                        <button type="button" onclick="openRincianModal('${r.username}')" class="text-blue-500 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 p-2 rounded-full transition" title="Lihat Profil & Verifikasi"><i class="fa-solid fa-user-check"></i></button>
+                    </td>
+                `;
+                tbody.appendChild(tr);
+            });
+            
+            renderPagination('pagination-belum-verif', totalPages, currentPageBelumVerif, 'BelumVerif');
+        }
 
         function applyAdminVerifFilters() {
             const searchTxt = document.getElementById('search-verif') ? document.getElementById('search-verif').value.toLowerCase() : '';
@@ -3275,6 +3419,7 @@
             // Perbarui UI secara langsung (Optimistic Update)
             openRincianModal(r.username);
             applyAdminMhsFilters(); 
+            applyAdminBelumVerifFilters(); // Perbarui juga tabel belum verif
             applyAdminVerifFilters(); // Perbarui juga tabel verif
             applyAdminTolakFilters(); // Perbarui juga tabel tolak
 
@@ -3318,6 +3463,7 @@
             let tableContainerId = '';
             if(type === 'Mhs') tableContainerId = 'admin-mhs-container';
             if(type === 'Akun') tableContainerId = 'admin-akun-container';
+            if(type === 'BelumVerif') tableContainerId = 'admin-belum-verif-table-body'; // Cek keberadaan tbody
             if(type === 'Verif') tableContainerId = 'admin-verif-table-body'; // Cek keberadaan tbody
             if(type === 'Tolak') tableContainerId = 'admin-tolak-table-body'; // Cek keberadaan tbody
             
@@ -3510,6 +3656,9 @@
             } else if (type === 'Akun') {
                 currentPageAkun += offset;
                 renderAdminTableAkun();
+            } else if (type === 'BelumVerif') {
+                currentPageBelumVerif += offset;
+                renderAdminTableBelumVerif(filteredDataBelumVerif);
             } else if (type === 'Verif') {
                 currentPageVerif += offset;
                 renderAdminTableVerif(filteredDataVerif);
