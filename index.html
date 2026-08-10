@@ -1720,13 +1720,13 @@
                         
                         // Pemisahan berdasarkan penugasan yang diberikan
                         if (uname === 'ver1ok') {
-                            const m1 = ['BIMBINGAN KONSELING', 'BIMBINGAN DAN KONSELING PENDIDIKAN ISLAM', 'PENDIDIKAN AGAMA ISLAM', 'FISIKA', 'INGGRIS'];
+                            const m1 = ['BIMBINGAN KONSELING', 'BIMBINGAN DAN KONSELING PENDIDIKAN ISLAM', 'PENDIDIKAN AGAMA ISLAM', 'INGGRIS'];
                             isAllowed = m1.some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
                         } else if (uname === 'ver2ok') {
                             const m2 = ['MADRASAH IBTIDAIYAH', 'BIOLOGI', 'MATEMATIKA', 'ARAB'];
                             isAllowed = m2.some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
                         } else if (uname === 'ver3ok') {
-                            isAllowed = info.includes('PONPES') || info.includes('MAGANG') || info.includes('DAKWAH') || info.includes('ANAK USIA DINI') || info.includes('MANAJEMEN PENDIDIKAN ISLAM');
+                            isAllowed = info.includes('PONPES') || info.includes('MAGANG') || info.includes('DAKWAH') || info.includes('ANAK USIA DINI') || info.includes('MANAJEMEN PENDIDIKAN ISLAM') || info.includes('FISIKA');
                         }
                         
                         if (isAllowed) allowedStudents.add(acc.username);
@@ -1860,9 +1860,9 @@
                         if (acc.role === 'admin') return true;
                         const info = ((acc.kelompok || '') + ' ' + (acc.fakultas || '')).toUpperCase();
                         const uname = currentUser.username.toLowerCase();
-                        if (uname === 'ver1ok') return ['BIMBINGAN KONSELING', 'BIMBINGAN DAN KONSELING PENDIDIKAN ISLAM', 'PENDIDIKAN AGAMA ISLAM', 'FISIKA', 'INGGRIS'].some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
+                        if (uname === 'ver1ok') return ['BIMBINGAN KONSELING', 'BIMBINGAN DAN KONSELING PENDIDIKAN ISLAM', 'PENDIDIKAN AGAMA ISLAM', 'INGGRIS'].some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
                         if (uname === 'ver2ok') return ['MADRASAH IBTIDAIYAH', 'BIOLOGI', 'MATEMATIKA', 'ARAB'].some(m => info.includes(m)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
-                        if (uname === 'ver3ok') return info.includes('PONPES') || info.includes('MAGANG') || info.includes('DAKWAH') || info.includes('ANAK USIA DINI') || info.includes('MANAJEMEN PENDIDIKAN ISLAM');
+                        if (uname === 'ver3ok') return info.includes('PONPES') || info.includes('MAGANG') || info.includes('DAKWAH') || info.includes('ANAK USIA DINI') || info.includes('MANAJEMEN PENDIDIKAN ISLAM') || info.includes('FISIKA');
                         return false;
                     });
                 }
