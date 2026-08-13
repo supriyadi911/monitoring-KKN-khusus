@@ -2781,6 +2781,56 @@
             });
         }
 
+        // =========================================================================
+        // FUNGSI PAGINASI (HALAMAN TABEL)
+        // =========================================================================
+        function renderPagination(containerId, totalPages, currentPage, type) {
+            const container = document.getElementById(containerId);
+            if (!container) return;
+
+            if (totalPages <= 1) {
+                container.classList.add('hidden');
+                container.innerHTML = '';
+                return;
+            }
+
+            container.classList.remove('hidden');
+            
+            let html = `
+                <div class="text-sm text-gray-600">
+                    Halaman <span class="font-bold text-emerald-600">${currentPage}</span> dari <span class="font-bold">${totalPages}</span>
+                </div>
+                <div class="flex space-x-2">
+                    <button onclick="changePage('${type}', ${currentPage - 1})" class="px-3 py-1.5 border border-gray-300 rounded bg-white text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm" ${currentPage === 1 ? 'disabled' : ''}>
+                        <i class="fa-solid fa-chevron-left text-xs"></i> Sebelumnya
+                    </button>
+                    <button onclick="changePage('${type}', ${currentPage + 1})" class="px-3 py-1.5 border border-gray-300 rounded bg-white text-gray-600 hover:bg-gray-100 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm" ${currentPage === totalPages ? 'disabled' : ''}>
+                        Selanjutnya <i class="fa-solid fa-chevron-right text-xs"></i>
+                    </button>
+                </div>
+            `;
+            container.innerHTML = html;
+        }
+        
+        function changePage(type, newPage) {
+            if (type === 'Mhs') {
+                currentPageMhs = newPage;
+                renderAdminTableMahasiswa(filteredDataMhs);
+            } else if (type === 'Akun') {
+                currentPageAkun = newPage;
+                renderAdminTableAkun();
+            } else if (type === 'Verif') {
+                currentPageVerif = newPage;
+                renderAdminTableVerif(filteredDataVerif);
+            } else if (type === 'BelumVerif') {
+                currentPageBelumVerif = newPage;
+                renderAdminTableBelumVerif(filteredDataBelumVerif);
+            } else if (type === 'Tolak') {
+                currentPageTolak = newPage;
+                renderAdminTableTolak(filteredDataTolak);
+            }
+        }
+
         // Helper untuk memformat Waktu Pengiriman dari Spreadsheet
         function getTimestampStr(item) {
             let rawTime = item.timestamp || item.Timestamp || item.waktu || item.Waktu;
@@ -3374,32 +3424,22 @@
             const newStatus = isDiakui ? 'DIAKUI' : 'TIDAK_DIAKUI';
             const verifStatus = parts[3] || 'UNVERIFIED';
             
-            // Simpan status baru
             r.rencana = `${jenis} | ${deskripsi} | ${newStatus} | ${verifStatus}`;
 
-            // Perbarui UI secara langsung (Optimistic Update)
+            // Perbarui UI Optimistic
             openRincianModal(r.username);
-            applyAdminRekapFilter();
-            applyAdminMhsFilters(); 
 
-            // Kirim ke backend di latar belakang
-            const payload = {
-                id: r.id,
-                tanggal: r.tanggal,
-                rencana: r.rencana,
-                keluhan: r.keluhan,
-                foto: r.foto
-            };
+            const payload = { id: r.id, tanggal: r.tanggal, rencana: r.rencana, keluhan: r.keluhan, foto: r.foto };
 
             if (USE_MOCK) {
                 const idx = mockMahasiswaReports.findIndex(x => String(x.id) === String(r.id));
                 if (idx > -1) mockMahasiswaReports[idx].rencana = r.rencana;
             } else {
-                fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'editMahasiswaReport', data: payload }),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                }).catch(e => console.error("Gagal mengupdate status:", e));
+                if (r._fbKey) {
+                    db.ref('laporan/' + r._fbKey).update({ rencana: r.rencana })
+                      .catch(e => console.error("Gagal update Firebase:", e));
+                    sendBackupToGAS('editMahasiswaReport', payload);
+                }
             }
         }
 
@@ -3413,437 +3453,21 @@
             const status = parts[2] || 'DIAKUI';
             const newVerif = isVerified ? 'VERIFIED' : 'UNVERIFIED';
             
-            // Simpan status baru
             r.rencana = `${jenis} | ${deskripsi} | ${status} | ${newVerif}`;
 
-            // Perbarui UI secara langsung (Optimistic Update)
+            // Perbarui UI Optimistic
             openRincianModal(r.username);
-            applyAdminMhsFilters(); 
-            applyAdminBelumVerifFilters(); // Perbarui juga tabel belum verif
-            applyAdminVerifFilters(); // Perbarui juga tabel verif
-            applyAdminTolakFilters(); // Perbarui juga tabel tolak
 
-            // Kirim ke backend di latar belakang
-            const payload = {
-                id: r.id,
-                tanggal: r.tanggal,
-                rencana: r.rencana,
-                keluhan: r.keluhan,
-                foto: r.foto
-            };
+            const payload = { id: r.id, tanggal: r.tanggal, rencana: r.rencana, keluhan: r.keluhan, foto: r.foto };
 
             if (USE_MOCK) {
                 const idx = mockMahasiswaReports.findIndex(x => String(x.id) === String(r.id));
                 if (idx > -1) mockMahasiswaReports[idx].rencana = r.rencana;
             } else {
-                fetch(SCRIPT_URL, {
-                    method: 'POST',
-                    body: JSON.stringify({ action: 'editMahasiswaReport', data: payload }),
-                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                }).catch(e => console.error("Gagal mengupdate verifikasi:", e));
-            }
-        }
-
-        function closeRincianModal() {
-            const modal = document.getElementById('rincian-modal');
-            if (modal) modal.classList.add('hidden');
-        }
-
-        function renderPagination(containerId, totalPages, currentPage, type) {
-            const container = document.getElementById(containerId);
-            if (!container) return;
-            
-            if (totalPages <= 1) {
-                container.innerHTML = '';
-                container.classList.add('hidden');
-                container.dataset.active = 'false';
-                return;
-            }
-            
-            let tableContainerId = '';
-            if(type === 'Mhs') tableContainerId = 'admin-mhs-container';
-            if(type === 'Akun') tableContainerId = 'admin-akun-container';
-            if(type === 'BelumVerif') tableContainerId = 'admin-belum-verif-table-body'; // Cek keberadaan tbody
-            if(type === 'Verif') tableContainerId = 'admin-verif-table-body'; // Cek keberadaan tbody
-            if(type === 'Tolak') tableContainerId = 'admin-tolak-table-body'; // Cek keberadaan tbody
-            
-            const tableContainer = document.getElementById(tableContainerId);
-            if(tableContainer) {
-                container.classList.remove('hidden');
-            }
-            container.dataset.active = 'true';
-            
-            container.innerHTML = `
-                <span class="text-sm text-gray-600 font-medium">Halaman ${currentPage} dari ${totalPages}</span>
-                <div class="space-x-2 flex">
-                    <button onclick="changePage('${type}', -1)" ${currentPage === 1 ? 'disabled' : ''} class="px-3 py-1 rounded bg-white border border-gray-300 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"><i class="fa-solid fa-chevron-left"></i></button>
-                    <button onclick="changePage('${type}', 1)" ${currentPage === totalPages ? 'disabled' : ''} class="px-3 py-1 rounded bg-white border border-gray-300 text-gray-700 hover:bg-emerald-50 hover:text-emerald-600 disabled:opacity-50 disabled:cursor-not-allowed transition shadow-sm"><i class="fa-solid fa-chevron-right"></i></button>
-                </div>
-            `;
-        }
-
-        // =========================================================================
-        // EKSPOR REKAP (EXCEL & PDF)
-        // =========================================================================
-        function downloadRekapExcel() {
-            const table = document.getElementById('admin-rekap-table-body');
-            const rows = table.querySelectorAll('tr');
-            
-            if (rows.length === 1 && rows[0].innerText.includes('Tidak ada data')) {
-                alert('Tidak ada data untuk diunduh.');
-                return;
-            }
-
-            const filterKelompok = document.getElementById('filter-kelompok-rekap').value || 'Semua Kelompok';
-            
-            // Membuat struktur file Excel (.xls) berbasis HTML agar rapi & langsung ada border/warna
-            let excelHtml = '<html xmlns:x="urn:schemas-microsoft-com:office:excel">';
-            excelHtml += '<head><meta charset="utf-8"></head><body>';
-            excelHtml += '<table border="1">';
-            excelHtml += '<thead><tr>';
-            excelHtml += '<th style="background-color: #7030A0; color: white; height: 30px;">No</th>';
-            excelHtml += '<th style="background-color: #7030A0; color: white;">Nama Mahasiswa</th>';
-            excelHtml += '<th style="background-color: #7030A0; color: white;">NIM</th>';
-            excelHtml += '<th style="background-color: #7030A0; color: white;">Kelompok</th>';
-            excelHtml += '<th style="background-color: #7030A0; color: white;">Total Jam</th>';
-            excelHtml += '<th style="background-color: #7030A0; color: white;">Ketercapaian</th>';
-            excelHtml += '</tr></thead>';
-            excelHtml += '<tbody>';
-
-            rows.forEach(row => {
-                const cols = row.querySelectorAll('td');
-                const no = cols[0].innerText.trim();
-                
-                // Pisahkan nama dan username (NIM)
-                const elNamaBlock = cols[1].querySelectorAll('div');
-                const mhsName = elNamaBlock[0] ? elNamaBlock[0].innerText.trim().toUpperCase() : '';
-                const mhsUser = elNamaBlock[1] ? elNamaBlock[1].innerText.replace('@', '').trim() : '';
-                
-                const kelompok = cols[2].innerText.trim();
-                const totalJam = cols[3].innerText.replace(' Jam', '').trim();
-                const persentase = cols[4].innerText.trim();
-                
-                // Tulis data per baris ke dalam sel Excel
-                // mso-number-format:'\@'; memastikan NIM tidak terpotong nol awalnya
-                excelHtml += `<tr>
-                    <td style="text-align: center;">${no}</td>
-                    <td>${mhsName}</td>
-                    <td style="text-align: center; mso-number-format:'\\@';">${mhsUser}</td>
-                    <td style="text-align: center;">${kelompok}</td>
-                    <td style="text-align: center;">${totalJam}</td>
-                    <td style="text-align: center;">${persentase}</td>
-                </tr>`;
-            });
-
-            excelHtml += '</tbody></table></body></html>';
-
-            // Jadikan file bertipe aplikasi Microsoft Excel
-            const blob = new Blob([excelHtml], { type: 'application/vnd.ms-excel' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = `Rekap_Jam_KKN_${filterKelompok.replace(/ /g, '_')}.xls`;
-            link.style.display = 'none';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-
-        function printRekapPDF() {
-            const table = document.getElementById('admin-rekap-table-body');
-            const rows = table.querySelectorAll('tr');
-            
-            if (rows.length === 1 && rows[0].innerText.includes('Tidak ada data')) {
-                alert('Tidak ada data untuk dicetak.');
-                return;
-            }
-
-            const filterKelompok = document.getElementById('filter-kelompok-rekap').value || 'Semua Kelompok';
-            const now = new Date();
-            const dateStr = now.toLocaleDateString('id-ID', { day: '2-digit', month: 'long', year: 'numeric' });
-            
-            // Format waktu menjadi hh.mm WIB
-            const hours = String(now.getHours()).padStart(2, '0');
-            const minutes = String(now.getMinutes()).padStart(2, '0');
-            const timeStr = `${hours}.${minutes} WIB`;
-
-            // Menyusun Struktur Tabel HTML yang rapi untuk dicetak
-            let tableHtml = '<table class="data-table">';
-            tableHtml += '<thead><tr><th style="width: 50px;">No</th><th style="text-align: left;">Nama Mahasiswa</th><th>NIM</th><th>Kelompok</th><th>Total Jam</th><th>Ketercapaian</th></tr></thead>';
-            tableHtml += '<tbody>';
-            
-            rows.forEach(row => {
-                const cols = row.querySelectorAll('td');
-                const no = cols[0].innerText.trim();
-                const elNamaBlock = cols[1].querySelectorAll('div');
-                const mhsName = elNamaBlock[0] ? elNamaBlock[0].innerText.trim().toUpperCase() : '';
-                const mhsUser = elNamaBlock[1] ? elNamaBlock[1].innerText.replace('@', '').trim() : '';
-                const kelompok = cols[2].innerText.trim();
-                const totalJam = cols[3].innerText.trim();
-                const persentase = cols[4].innerText.trim();
-                
-                tableHtml += `<tr>
-                    <td style="text-align: center;">${no}</td>
-                    <td>${mhsName}</td>
-                    <td style="text-align: center;">${mhsUser}</td>
-                    <td style="text-align: center;">${kelompok}</td>
-                    <td style="text-align: center; font-weight: bold; color: #444;">${totalJam}</td>
-                    <td style="text-align: center; font-weight: bold; color: #444;">${persentase}</td>
-                </tr>`;
-            });
-            tableHtml += '</tbody></table>';
-
-            // Membuka jendela baru khusus Print
-            const printWindow = window.open('', '_blank');
-            printWindow.document.write(`
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>Cetak Rekap Jam KKN - ${filterKelompok}</title>
-                    <style>
-                        @page { size: A4 portrait; margin: 20mm; }
-                        body { font-family: Arial, Helvetica, sans-serif; color: #333; line-height: 1.5; font-size: 13px; }
-                        
-                        /* Format Header / Kop Surat */
-                        .header-container { text-align: center; border-bottom: 3px solid #000; padding-bottom: 12px; margin-bottom: 25px; }
-                        .header-container h1 { margin: 0 0 8px 0; font-size: 18px; text-transform: uppercase; font-weight: bold; color: #000; }
-                        
-                        /* Format Info Waktu & Filter */
-                        .info-section { margin-bottom: 20px; font-size: 14px; color: #000; }
-                        .info-section table { border: none; width: auto; border-collapse: collapse; }
-                        .info-section td { padding: 3px 8px 3px 0; border: none; vertical-align: top; }
-                        
-                        /* Format Tabel Data */
-                        .data-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 13px; }
-                        .data-table th, .data-table td { border: 1px solid #ddd; padding: 12px 10px; }
-                        .data-table th { background-color: #7030A0; color: white; font-weight: bold; text-align: center; border: 1px solid #7030A0; }
-                        .data-table td { color: #555; }
-                        .data-table td:nth-child(2) { color: #666; }
-                    </style>
-                </head>
-                <body>
-                    <div class="header-container">
-                        <h1>REKAPITULASI TOTAL JAM KEGIATAN MAHASISWA KKN</h1>
-                        <h1 style="margin-bottom: 0;">UNIVERSITAS ISLAM NEGERI RADEN INTAN LAMPUNG</h1>
-                    </div>
-                    
-                    <div class="info-section">
-                        <table>
-                            <tr><td style="width: 120px;">Kelompok Filter</td><td>: ${filterKelompok}</td></tr>
-                            <tr><td>Waktu Cetak</td><td>: ${dateStr} pukul ${timeStr}</td></tr>
-                        </table>
-                    </div>
-
-                    ${tableHtml}
-
-                </body>
-                </html>
-            `);
-            
-            printWindow.document.close();
-            printWindow.focus();
-            
-            // Print otomatis
-            setTimeout(() => {
-                printWindow.print();
-                printWindow.close();
-            }, 500);
-        }
-
-        function changePage(type, offset) {
-            if (type === 'Mhs') {
-                currentPageMhs += offset;
-                renderAdminTableMahasiswa(filteredDataMhs);
-            } else if (type === 'Akun') {
-                currentPageAkun += offset;
-                renderAdminTableAkun();
-            } else if (type === 'BelumVerif') {
-                currentPageBelumVerif += offset;
-                renderAdminTableBelumVerif(filteredDataBelumVerif);
-            } else if (type === 'Verif') {
-                currentPageVerif += offset;
-                renderAdminTableVerif(filteredDataVerif);
-            } else if (type === 'Tolak') {
-                currentPageTolak += offset;
-                renderAdminTableTolak(filteredDataTolak);
-            }
-        }
-
-        // =========================================================================
-        // DASHBOARD MAHASISWA LOGIC
-        // =========================================================================
-        async function loadMahasiswaData() {
-            setConnectionStatus('loading');
-            try {
-                const mhsNama = document.getElementById('mhs-nama');
-                const mhsNim = document.getElementById('mhs-nim');
-                const mhsKelompok = document.getElementById('mhs-kelompok');
-                const mhsDpl = document.getElementById('mhs-dpl');
-                const mhsLokasi = document.getElementById('mhs-lokasi');
-
-                if (mhsNama) mhsNama.innerText = currentUser.namaLengkap;
-                if (mhsNim) mhsNim.innerText = currentUser.nim || currentUser.nip || '-';
-                if (mhsKelompok) mhsKelompok.innerText = currentUser.kelompok;
-                if (mhsDpl) mhsDpl.innerText = currentUser.dpl || '-';
-                if (mhsLokasi) mhsLokasi.innerText = currentUser.lokasi;
-
-                if (USE_MOCK) {
-                    mahasiswaReportsData = [...mockMahasiswaReports];
-                    setConnectionStatus('online');
-                } else {
-                    const res = await fetch(`${SCRIPT_URL}?action=getMahasiswaReports&_t=${new Date().getTime()}`);
-                    const data = await res.json();
-                    mahasiswaReportsData = data.reports;
-                    setConnectionStatus('online');
-                }
-                renderMahasiswaDashboard();
-            } catch (error) {
-                setConnectionStatus('offline');
-            }
-        }
-
-        function renderMahasiswaDashboard() {
-            // Sembunyikan history laporan verifikasi dari mahasiswa
-            const myReports = mahasiswaReportsData.filter(r => r.username === currentUser.username);
-            const tbody = document.getElementById('mhs-table-body');
-            const tfoot = document.getElementById('mhs-table-footer');
-            if (!tbody) return;
-            tbody.innerHTML = '';
-            if (tfoot) tfoot.innerHTML = ''; 
-
-            const btnBulk = document.getElementById('btn-bulk-delete-mhs');
-            if (btnBulk) btnBulk.classList.add('hidden');
-            const selectAll = document.getElementById('selectAllMhs');
-            if (selectAll) selectAll.checked = false;
-
-            if (myReports.length === 0) {
-                tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Belum ada riwayat kegiatan harian.</td></tr>';
-                return;
-            }
-
-            let totalJam = 0; 
-
-            const sortedData = myReports.sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
-
-            sortedData.forEach(r => {
-                const parts = (r.rencana || '').split(' | ');
-                const jenis = parts[0];
-                const deskripsi = parts[1] || '';
-                const status = parts[2] || 'DIAKUI';
-                const isDiakui = status !== 'TIDAK_DIAKUI';
-                const isVerif = parts[3] === 'VERIFIED';
-
-                if (isDiakui) totalJam += Number(r.keluhan || 0); 
-
-                const jamHtml = isDiakui 
-                    ? `<div class="text-xs text-purple-600 mt-1 font-medium"><i class="fa-regular fa-clock mr-1"></i>${r.keluhan} Jam</div>` 
-                    : `<div class="text-xs text-red-500 mt-1 line-through"><i class="fa-regular fa-clock mr-1"></i>${r.keluhan} Jam</div><div class="text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded inline-block mt-0.5"><i class="fa-solid fa-xmark mr-1"></i>Ditolak</div>`;
-                    
-                const verifBadge = isVerif 
-                    ? `<span class="ml-2 text-[10px] bg-blue-100 text-blue-700 px-1.5 py-0.5 rounded font-bold"><i class="fa-solid fa-lock mr-1"></i>Telah Terverifikasi</span>` 
-                    : '';
-
-                const actionHtml = isVerif
-                    ? `<span class="text-[11px] text-gray-500 font-bold bg-gray-100 border border-gray-200 px-2 py-1 rounded inline-block"><i class="fa-solid fa-lock mr-1"></i>Terkunci</span>`
-                    : `<button type="button" onclick="editMahasiswaReport('${r.id}')" class="text-yellow-500 hover:text-yellow-700 bg-yellow-50 hover:bg-yellow-100 p-2 rounded-full transition" title="Edit"><i class="fa-solid fa-pen-to-square"></i></button>
-                       <button type="button" onclick="deleteMahasiswaReport('${r.id}', this)" class="text-red-500 hover:text-red-700 bg-red-50 hover:bg-red-100 p-2 rounded-full transition" title="Hapus"><i class="fa-solid fa-trash"></i></button>`;
-
-                const checkboxHtml = isVerif
-                    ? `<i class="fa-solid fa-lock text-gray-300 text-sm" title="Terkunci (Sudah diverifikasi)"></i>`
-                    : `<input type="checkbox" class="row-checkbox-mhs" value="${r.id}" onchange="updateBulkActionStateMhs()">`;
-
-                const tr = document.createElement('tr');
-                tr.innerHTML = `
-                    <td class="px-4 py-3 text-center">
-                        ${checkboxHtml}
-                    </td>
-                    <td class="px-4 py-3 whitespace-nowrap text-gray-600">${r.tanggal}</td>
-                    <td class="px-4 py-3 whitespace-nowrap text-xs font-mono text-gray-500 bg-gray-50"><i class="fa-regular fa-clock mr-1"></i>${getTimestampStr(r)}</td>
-                    <td class="px-4 py-3 text-gray-700">
-                        <div class="font-bold text-gray-800 flex items-center"><span class="truncate max-w-[200px]" title="${jenis}">${jenis}</span> ${verifBadge}</div>
-                        <div class="text-xs text-gray-600 mt-0.5 max-w-[250px] whitespace-normal" title="${deskripsi}">${deskripsi}</div>
-                        ${jamHtml}
-                    </td>
-                    <td class="px-4 py-3 text-center">
-                        <a href="${r.foto}" target="_blank" class="text-purple-500 hover:text-purple-700 bg-purple-50 hover:bg-purple-100 p-2 rounded-full inline-block transition" title="Lihat Foto"><i class="fa-solid fa-image"></i></a>
-                    </td>
-                    <td class="px-4 py-3 text-center space-x-2">
-                        ${actionHtml}
-                    </td>
-                `;
-                tbody.appendChild(tr);
-            });
-
-            if (tfoot) {
-                const persentase = totalJam ? ((totalJam / 181) * 100).toFixed(1).replace('.', ',').replace(',0', '') : "0";
-                tfoot.innerHTML = `
-                    <tr>
-                        <td colspan="3" class="px-4 py-3 text-right font-bold text-gray-800">Total Akumulasi Waktu:</td>
-                        <td colspan="3" class="px-4 py-3 font-bold text-purple-700 text-base">${totalJam} Jam (${persentase}%) dari target 181 jam </td>
-                    </tr>
-                `;
-            }
-        }
-
-        async function submitMahasiswaReport(e) {
-            e.preventDefault();
-            const btn = document.getElementById('btn-submit-mhs');
-            if (btn) {
-                btn.innerText = 'Menyimpan...';
-                btn.disabled = true;
-            }
-
-            const id = document.getElementById('mhs-report-id') ? document.getElementById('mhs-report-id').value : '';
-            
-            // Menggabungkan Jenis, Deskripsi, dan Status dengan pemisah " | " agar tidak merusak format backend
-            const inputJenis = document.getElementById('mhs-jenis') ? document.getElementById('mhs-jenis').value : '';
-            const inputDeskripsi = document.getElementById('mhs-deskripsi') ? document.getElementById('mhs-deskripsi').value.trim() : '';
-            
-            // Pertahankan status persetujuan yang sudah ada jika sedang diedit
-            const existingReport = mahasiswaReportsData.find(x => String(x.id) === String(id));
-            const existingStatus = existingReport ? (existingReport.rencana || '').split(' | ')[2] || 'DIAKUI' : 'DIAKUI';
-            const existingVerif = existingReport ? (existingReport.rencana || '').split(' | ')[3] || 'UNVERIFIED' : 'UNVERIFIED';
-            
-            const combinedRencana = `${inputJenis} | ${inputDeskripsi} | ${existingStatus} | ${existingVerif}`;
-
-            const payload = {
-                id: id ? parseInt(id) : Date.now(), 
-                username: currentUser.username,
-                kelompok: currentUser.kelompok,
-                tanggal: document.getElementById('mhs-tanggal') ? document.getElementById('mhs-tanggal').value : '',
-                rencana: combinedRencana, 
-                keluhan: document.getElementById('mhs-jam') ? document.getElementById('mhs-jam').value : '',  
-                foto: document.getElementById('mhs-foto') ? document.getElementById('mhs-foto').value : '',
-                timestamp: new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) + ' WIB'
-            };
-
-            try {
-                if (USE_MOCK) {
-                    await new Promise(r => setTimeout(r, 600)); 
-                    if (id) {
-                        const idx = mockMahasiswaReports.findIndex(x => String(x.id) === String(id));
-                        mockMahasiswaReports[idx] = payload;
-                    } else mockMahasiswaReports.push(payload);
-                } else {
-                    const action = id ? 'editMahasiswaReport' : 'addMahasiswaReport';
-                    const res = await fetch(SCRIPT_URL, {
-                        method: 'POST',
-                        body: JSON.stringify({ action: action, data: payload }),
-                        headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                    });
-                    const textRes = await res.text();
-                    let result = JSON.parse(textRes);
-                    if(!result.success) throw new Error(result.error || "Gagal menyimpan");
-                }
-
-                alert("Laporan kegiatan harian berhasil disimpan!");
-                resetMahasiswaForm();
-                await loadDataFromServer(); 
-            } catch (err) {
-                alert("Terjadi kesalahan: " + err.message);
-            } finally {
-                if (btn) {
-                    btn.innerText = 'Simpan';
-                    btn.disabled = false;
+                if (r._fbKey) {
+                    db.ref('laporan/' + r._fbKey).update({ rencana: r.rencana })
+                      .catch(e => console.error("Gagal update Firebase:", e));
+                    sendBackupToGAS('editMahasiswaReport', payload);
                 }
             }
         }
