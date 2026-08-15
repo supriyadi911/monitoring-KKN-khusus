@@ -31,7 +31,7 @@
     <!-- ==============================
          SPLASH SCREEN
     =============================== -->
-    <div id="splash-screen" class="fixed inset-0 z-[9999] bg-gradient-to-br from-emerald-50 via-white to-gray-100 flex flex-col items-center justify-center transition-all duration-700 ease-in-out">
+    <div id="splash-screen" class="fixed inset-0 z-[9999] bg-gradient-to-br from-emerald-50 via-white to-gray-100 flex flex-col items-center justify-center transition-all duration-300 ease-in-out">
         <div class="relative flex flex-col items-center animate-pulse">
             <!-- Logo UIN -->
             <img src="https://upload.wikimedia.org/wikipedia/id/thumb/3/3d/Lambang_UIN_Raden_Intan_Lampung.png/250px-Lambang_UIN_Raden_Intan_Lampung.png" alt="Logo UIN Raden Intan" class="h-32 md:h-40 w-auto mb-6 drop-shadow-lg object-contain">
@@ -1234,6 +1234,35 @@
             </div>
         </div>
 
+        <!-- Modal Info DNS (Pop-up Awal) -->
+        <div id="dns-modal" class="fixed inset-0 z-[9998] bg-black/60 backdrop-blur-sm hidden items-center justify-center p-4 transition-opacity duration-300 opacity-0">
+            <div class="bg-white rounded-xl shadow-2xl w-full max-w-md overflow-hidden transform transition-transform duration-300 scale-95" id="dns-modal-content">
+                <div class="bg-emerald-600 p-4 text-center">
+                    <i class="fa-solid fa-wifi text-3xl text-white mb-2"></i>
+                    <h3 class="font-bold text-white text-lg">Optimasi Koneksi Database</h3>
+                </div>
+                <div class="p-6 text-gray-700 text-sm">
+                    <p class="mb-4">Agar koneksi dari perangkat Anda ke database aplikasi SIM KKN lancar, silakan atur <strong>DNS Pribadi (Private DNS)</strong> di HP Anda:</p>
+                    <ol class="list-decimal pl-5 space-y-2 mb-6 font-medium text-gray-800">
+                        <li>Buka <span class="text-emerald-700">Pengaturan (Settings)</span> HP.</li>
+                        <li>Cari menu <span class="text-emerald-700">Koneksi / Jaringan</span>.</li>
+                        <li>Cari pengaturan <span class="text-emerald-700">DNS Pribadi (Private DNS)</span>.</li>
+                        <li>Pilih <em>"Host penyedia DNS Pribadi"</em> dan ketik:<br>
+                            <code class="bg-gray-100 px-2 py-1 rounded text-emerald-600 block mt-1 w-max font-bold border border-gray-200">dns.google.com</code>
+                        </li>
+                        <li>Simpan pengaturan.</li>
+                    </ol>
+                    <label class="flex items-start space-x-2 cursor-pointer bg-gray-50 p-3 rounded border border-gray-200 hover:bg-gray-100 transition">
+                        <input type="checkbox" id="dns-checkbox" class="w-4 h-4 mt-0.5 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500">
+                        <span class="text-xs text-gray-600 font-medium leading-tight">Saya telah mengatur DNS (Jangan tampilkan pesan ini lagi)</span>
+                    </label>
+                </div>
+                <div class="bg-gray-50 p-4 border-t flex justify-end">
+                    <button onclick="closeDnsModal()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg text-sm transition shadow-sm w-full sm:w-auto">Saya Mengerti</button>
+                </div>
+            </div>
+        </div>
+
     </main>
 
     <!-- JAVASCRIPT LOGIC -->
@@ -1307,7 +1336,7 @@
         // =========================================================================
         // INITIALIZATION & ROUTING
         // =========================================================================
-        window.onload = async () => {
+        window.onload = () => {
             const session = localStorage.getItem('kkn_session');
             if (session) {
                 currentUser = JSON.parse(session);
@@ -1316,25 +1345,68 @@
                 }
             }
 
-            const splashTimeout = new Promise(resolve => setTimeout(resolve, 1500));
-            const dataLoadPromise = loadDataFromServer();
-            
-            await Promise.all([splashTimeout, dataLoadPromise]);
-
+            // Langsung memuat tampilan halaman/UI secara instan
             if (currentUser) {
-                routeUser();
+                routeUser(); 
+                // Catatan: fungsi routeUser() di bawah sudah otomatis memanggil loadDataFromServer()
             } else {
                 showPublicPage();
+                // Tarik data dari database murni berjalan di latar belakang
+                loadDataFromServer(); 
             }
 
-            const splash = document.getElementById('splash-screen');
-            if (splash) {
-                splash.classList.add('opacity-0', 'invisible', 'scale-105');
-                setTimeout(() => {
-                    splash.remove(); 
-                }, 700);
-            }
+            // Splash Screen berjalan dengan waktunya sendiri (hanya sebagai pemanis visual, misal 800ms)
+            setTimeout(() => {
+                const splash = document.getElementById('splash-screen');
+                if (splash) {
+                    splash.classList.add('opacity-0', 'invisible', 'scale-105');
+                    setTimeout(() => {
+                        splash.remove(); 
+                        showDnsModal(); // Tampilkan popup DNS setelah splash menghilang
+                    }, 500); // Durasi efek memudar transisi
+                } else {
+                    showDnsModal();
+                }
+            }, 800); 
         };
+
+        // Fungsi Tampilkan dan Sembunyikan Modal DNS
+        function showDnsModal() {
+            // Cek apakah user sudah mencentang checkbox sebelumnya
+            if (!localStorage.getItem('kkn_dns_configured')) {
+                const modal = document.getElementById('dns-modal');
+                const content = document.getElementById('dns-modal-content');
+                if (modal) {
+                    modal.classList.remove('hidden');
+                    modal.classList.add('flex');
+                    // Trigger animasi masuk
+                    setTimeout(() => {
+                        modal.classList.remove('opacity-0');
+                        content.classList.remove('scale-95');
+                        content.classList.add('scale-100');
+                    }, 50);
+                }
+            }
+        }
+
+        function closeDnsModal() {
+            const checkbox = document.getElementById('dns-checkbox');
+            if (checkbox && checkbox.checked) {
+                localStorage.setItem('kkn_dns_configured', 'true');
+            }
+            
+            const modal = document.getElementById('dns-modal');
+            const content = document.getElementById('dns-modal-content');
+            if (modal) {
+                modal.classList.add('opacity-0');
+                content.classList.remove('scale-100');
+                content.classList.add('scale-95');
+                setTimeout(() => {
+                    modal.classList.add('hidden');
+                    modal.classList.remove('flex');
+                }, 300);
+            }
+        }
 
         async function handleLogin(e) {
             e.preventDefault();
