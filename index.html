@@ -24,6 +24,16 @@
         .animate-marquee { display: inline-block; padding-left: 100%; animation: marquee 70s linear infinite; }
         @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-100%); } }
         .animate-marquee:hover { animation-play-state: paused; }
+        
+        /* Optimasi Responsif Lanjutan untuk Layar Kecil (Mobile/Tablet) */
+        @media (max-width: 768px) {
+            .px-6 { padding-left: 1rem !important; padding-right: 1rem !important; }
+            .py-4 { padding-top: 0.75rem !important; padding-bottom: 0.75rem !important; }
+            .p-6 { padding: 1rem !important; }
+            table { font-size: 0.75rem !important; }
+            th, td { padding: 0.5rem !important; }
+            .text-2xl { font-size: 1.25rem !important; line-height: 1.75rem !important; }
+        }
     </style>
 </head>
 <body class="text-gray-800">
@@ -54,27 +64,27 @@
 
     <!-- Navbar -->
     <nav class="bg-emerald-700 text-white shadow-md w-full z-10 sticky top-0 hidden" id="navbar">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
-                <div class="flex-shrink-0 flex items-center font-bold text-xl">
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-14 sm:h-16 items-center">
+                <div class="flex-shrink-0 flex items-center font-bold text-lg sm:text-xl">
                     <!-- Tombol Toggle Sidebar -->
-                    <button id="btn-sidebar-toggle" onclick="toggleSidebar()" class="hidden mr-4 text-white hover:text-gray-300 focus:outline-none transition">
-                        <i class="fa-solid fa-bars text-xl"></i>
+                    <button id="btn-sidebar-toggle" onclick="toggleSidebar()" class="hidden mr-3 sm:mr-4 text-white hover:text-gray-300 focus:outline-none transition">
+                        <i class="fa-solid fa-bars text-lg sm:text-xl"></i>
                     </button>
-                    <i class="fa-solid fa-map-location-dot mr-2"></i> SIM KKN
+                    <i class="fa-solid fa-map-location-dot mr-1.5 sm:mr-2"></i> <span class="hidden sm:inline">SIM KKN</span><span class="sm:hidden">SIM KKN</span>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 sm:space-x-4">
                     <!-- Status Koneksi (Admin/Mahasiswa) -->
-                    <div class="hidden sm:flex items-center text-xs font-medium px-2 py-1 bg-emerald-800 rounded-full border border-emerald-600" title="Status Koneksi Database">
+                    <div class="hidden md:flex items-center text-xs font-medium px-2 py-1 bg-emerald-800 rounded-full border border-emerald-600" title="Status Koneksi Database">
                         <i class="fa-solid fa-circle text-gray-400 text-[10px] mr-1" id="nav-conn-icon"></i> <span id="nav-conn-text">Memeriksa...</span>
                     </div>
                     
-                    <span id="nav-username" class="font-medium hidden sm:block"></span>
-                    <button onclick="handleRefresh()" class="bg-blue-500 hover:bg-blue-600 px-3 py-1 rounded-md text-sm font-medium transition duration-150 flex items-center shadow-sm" title="Segarkan Data Terkini">
-                        <i class="fa-solid fa-rotate-right mr-1.5"></i> <span class="hidden sm:inline">Refresh</span>
+                    <span id="nav-username" class="font-medium text-sm hidden md:block"></span>
+                    <button onclick="handleRefresh()" class="bg-blue-500 hover:bg-blue-600 p-1.5 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition duration-150 flex items-center shadow-sm" title="Segarkan Data Terkini">
+                        <i class="fa-solid fa-rotate-right sm:mr-1.5"></i> <span class="hidden sm:inline">Refresh</span>
                     </button>
-                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 px-3 py-1 rounded-md text-sm font-medium transition duration-150 flex items-center shadow-sm">
-                        <i class="fa-solid fa-sign-out-alt mr-1.5"></i> <span class="hidden sm:inline">Keluar</span>
+                    <button onclick="logout()" class="bg-red-500 hover:bg-red-600 p-1.5 sm:px-3 sm:py-1.5 rounded-md text-xs sm:text-sm font-medium transition duration-150 flex items-center shadow-sm">
+                        <i class="fa-solid fa-sign-out-alt sm:mr-1.5"></i> <span class="hidden sm:inline">Keluar</span>
                     </button>
                 </div>
             </div>
@@ -355,8 +365,11 @@
         =============================== -->
         <div id="admin-page" class="hidden flex-grow w-full bg-gray-100 flex-col md:flex-row overflow-hidden relative">
             
+            <!-- Overlay Sidebar Mobile -->
+            <div id="sidebar-overlay" onclick="toggleSidebar()" class="fixed inset-0 bg-gray-900 bg-opacity-50 z-30 hidden transition-opacity md:hidden"></div>
+
             <!-- Sidebar Menu Admin -->
-            <aside id="admin-sidebar" class="w-64 bg-gray-800 text-white flex flex-col shadow-xl z-40 flex-shrink-0 absolute md:relative h-full transform -translate-x-full md:translate-x-0 transition-transform duration-300">
+            <aside id="admin-sidebar" class="w-64 bg-gray-800 text-white flex flex-col shadow-xl z-40 flex-shrink-0 fixed md:relative h-full transform -translate-x-full md:translate-x-0 transition-transform duration-300">
                 <div class="p-5 font-bold text-lg border-b border-gray-700 flex items-center justify-between bg-gray-900 sticky top-0 z-20">
                     <div class="flex items-center space-x-2">
                         <i class="fa-solid fa-shield-halved text-emerald-400"></i>
@@ -571,12 +584,12 @@
 
                     <!-- Kartu Info Belum Lapor (Mahasiswa) -->
                     <div class="mb-8">
-                        <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-4 mt-8 gap-2">
-                            <h3 class="text-xl font-bold text-gray-800"><i class="fa-solid fa-user-clock mr-2 text-emerald-600"></i>Daftar Mahasiswa Belum Lapor</h3>
-                            <div class="flex items-center space-x-2">
-                                <span class="text-sm font-medium text-gray-500 bg-gray-200 px-3 py-1 rounded-full" id="badge-unreported-mhs-total">Total: 0</span>
-                                <button onclick="sendWhatsAppReminder('ALL')" class="bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded flex items-center transition shadow-sm" title="Bagikan semua daftar ke WhatsApp">
-                                    <i class="fa-brands fa-whatsapp mr-1 text-sm"></i> Share Semua ke WA
+                        <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-4 mt-8 gap-3">
+                            <h3 class="text-lg md:text-xl font-bold text-gray-800"><i class="fa-solid fa-user-clock mr-2 text-emerald-600"></i>Daftar Mahasiswa Belum Lapor</h3>
+                            <div class="flex flex-wrap items-center gap-2 w-full md:w-auto">
+                                <span class="text-xs sm:text-sm font-medium text-gray-500 bg-gray-200 px-3 py-1.5 rounded-full" id="badge-unreported-mhs-total">Total: 0</span>
+                                <button onclick="sendWhatsAppReminder('ALL')" class="flex-1 md:flex-none bg-green-500 hover:bg-green-600 text-white text-xs font-bold px-3 py-1.5 rounded flex items-center justify-center transition shadow-sm" title="Bagikan semua daftar ke WhatsApp">
+                                    <i class="fa-brands fa-whatsapp mr-1 text-sm"></i> Share WA
                                 </button>
                             </div>
                         </div>
@@ -1684,6 +1697,8 @@
                         sidebar.style.display = ''; 
                         if (window.innerWidth < 768) {
                             sidebar.classList.add('-translate-x-full');
+                            const overlay = document.getElementById('sidebar-overlay');
+                            if(overlay) overlay.classList.add('hidden');
                         } else {
                             sidebar.classList.remove('-translate-x-full');
                         }
@@ -1939,8 +1954,12 @@
 
             if (window.innerWidth < 768) {
                 const sidebar = document.getElementById('admin-sidebar');
+                const overlay = document.getElementById('sidebar-overlay');
                 if (sidebar && !sidebar.classList.contains('-translate-x-full')) {
                     sidebar.classList.add('-translate-x-full');
+                }
+                if (overlay && !overlay.classList.contains('hidden')) {
+                    overlay.classList.add('hidden');
                 }
             }
         }
@@ -3785,10 +3804,22 @@
                 }
                 await loadDataFromServer();
             } catch (err) {
-                alert("Beberapa data mungkin gagal dihapus. Silakan periksa kembali.");
-                if (btn) btn.innerHTML = originalText;
+                alert("Gagal menghapus beberapa data: " + err.message);
             } finally {
-                if (btn) btn.disabled = false;
+                if (btn) {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }
+            }
+        }
+
+        function toggleSidebar() {
+            const sidebar = document.getElementById('admin-sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            if (!sidebar) return;
+            sidebar.classList.toggle('-translate-x-full');
+            if (overlay) {
+                overlay.classList.toggle('hidden');
             }
         }
     </script>
