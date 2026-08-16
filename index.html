@@ -77,7 +77,7 @@
     </div>
 
     <!-- Navbar -->
-    <nav class="bg-emerald-700 text-white shadow-md w-full z-10 sticky top-0 hidden breakout-full-width" id="navbar">
+    <nav class="bg-emerald-700 text-white shadow-md w-full z-10 sticky top-0 hidden" id="navbar">
         <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
             <div class="flex justify-between h-14 sm:h-16 items-center">
                 <div class="flex-shrink-0 flex items-center font-bold text-lg sm:text-xl">
@@ -87,10 +87,10 @@
                     </button>
                     <i class="fa-solid fa-map-location-dot mr-1.5 sm:mr-2"></i> <span class="hidden sm:inline">SIM KKN</span><span class="sm:hidden">SIM KKN</span>
                 </div>
-                <div class="flex items-center space-x-2 sm:space-x-4">
-                    <!-- Status Koneksi (Admin/Mahasiswa) -->
-                    <div class="hidden md:flex items-center text-xs font-medium px-2 py-1 bg-emerald-800 rounded-full border border-emerald-600" title="Status Koneksi Database">
-                        <i class="fa-solid fa-circle text-gray-400 text-[10px] mr-1" id="nav-conn-icon"></i> <span id="nav-conn-text">Memeriksa...</span>
+                <div class="flex items-center space-x-2 sm:space-x-3">
+                    <!-- Status Koneksi Database (Tampil untuk Semua Akun & Responsif) -->
+                    <div class="flex items-center text-xs font-medium px-2 py-1 bg-emerald-800 rounded-full border border-emerald-600 shadow-sm" title="Status Koneksi Database">
+                        <i class="fa-solid fa-circle text-gray-400 text-[10px] sm:mr-1" id="nav-conn-icon"></i> <span id="nav-conn-text" class="hidden sm:inline">Memeriksa...</span>
                     </div>
                     
                     <span id="nav-username" class="font-medium text-sm hidden md:block"></span>
