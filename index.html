@@ -403,7 +403,7 @@
                     <!-- Dropdown: Laporan Mahasiswa -->
                     <div id="group-laporan-mhs">
                         <button onclick="toggleDropdown('dropdown-laporan')" class="w-full flex items-center justify-between px-4 py-3 text-gray-300 hover:bg-gray-700 hover:text-white rounded-lg transition font-medium">
-                            <span class="flex items-center"><i class="fa-solid fa-file-signature w-6 text-center"></i> Laporan Mahasiswa</span>
+                            <span class="flex items-center"><i class="fa-solid fa-file-signature w-6 text-center text-s"></i> Laporan Mahasiswa</span>
                             <i id="icon-dropdown-laporan" class="fa-solid fa-chevron-down text-xs transition-transform duration-200"></i>
                         </button>
                         <div id="dropdown-laporan" class="hidden flex-col mt-1 pl-6 pr-2 space-y-1">
@@ -1307,6 +1307,37 @@
 
     <!-- JAVASCRIPT LOGIC -->
     <script>
+        // =========================================================================
+        // INTERSEPTOR JARINGAN (AUTO-RETRY & BYPASS FIREWALL PROVIDER)
+        // =========================================================================
+        const originalFetch = window.fetch;
+        window.fetch = async function(url, options = {}) {
+            let retries = 3;
+            let delay = 1000; // Mulai dengan jeda 1 detik
+
+            // Paksa browser untuk menembus/mengikuti pengalihan proxy provider
+            options.redirect = 'follow';
+
+            while (retries > 0) {
+                try {
+                    // Eksekusi fungsi fetch bawaan browser
+                    const response = await originalFetch(url, options);
+                    return response;
+                } catch (error) {
+                    retries--;
+                    if (retries === 0) {
+                        console.error("Koneksi fetch terputus total setelah 3x percobaan:", error);
+                        throw error; // Menyerah dan lempar error ke aplikasi
+                    }
+                    console.warn(`[Auto-Retry] Dicegat oleh jaringan provider. Sedang mencoba ulang... (Sisa percobaan: ${retries}x). Error: ${error.message}`);
+                    
+                    // Jeda sejenak sebelum mencoba lagi (agar tidak dianggap spam oleh provider)
+                    await new Promise(res => setTimeout(res, delay));
+                    delay *= 2; // Exponential Backoff: Jeda menjadi 1 detik, lalu 2 detik
+                }
+            }
+        };
+
         // =========================================================================
         // PENGAMANAN FRONTEND (ANTI-INSPECT & OBFUSCATION)
         // =========================================================================
@@ -3493,11 +3524,8 @@
                     if (USE_MOCK) {
                         mockMahasiswaReports.push(payload);
                     } else {
-                        await fetch(SCRIPT_URL, {
-                            method: 'POST',
-                            body: JSON.stringify({ action: 'addMahasiswaReport', data: payload }),
-                            headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-                        });
+                        await fbAddReport(payload);
+                        sendBackupToGAS('addMahasiswaReport', payload);
                     }
                     await loadDataFromServer();
                 } catch (err) {
@@ -3507,6 +3535,13 @@
             
             // Perbarui tampilan modal rincian setelah aksi verifikasi
             openRincianModal(username);
+        }
+
+        function closeRincianModal() {
+            const modal = document.getElementById('rincian-modal');
+            if (modal) {
+                modal.classList.add('hidden');
+            }
         }
 
         function openRincianModal(username) {
