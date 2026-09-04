@@ -465,7 +465,37 @@
                      TAB 1: DASHBOARD OVERVIEW
                 ------------------------------------------ -->
                 <div id="admin-tab-dashboard" class="space-y-6">
-                    <h1 class="text-2xl font-bold text-gray-800 mb-6">Dashboard Monitor Admin</h1>
+                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-2">
+                        <h1 class="text-2xl font-bold text-gray-800">Dashboard Monitor Admin</h1>
+                        <span id="admin-role-badge" class="hidden text-xs font-semibold px-3 py-1 rounded-full w-max shadow-sm"></span>
+                    </div>
+
+                    <!-- Banner Identitas Verifikator (Tampil khusus untuk ver1ok, ver2ok, ver3ok) -->
+                    <div id="verifikator-info-banner" class="hidden bg-gradient-to-r from-emerald-800 via-emerald-700 to-teal-800 text-white rounded-xl p-5 shadow-md border border-emerald-600 mb-6">
+                        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                            <div class="flex items-start space-x-3.5">
+                                <div class="bg-white/15 p-3 rounded-xl flex items-center justify-center border border-white/20 shadow-inner">
+                                    <i class="fa-solid fa-user-shield text-2xl text-emerald-200"></i>
+                                </div>
+                                <div>
+                                    <div class="flex items-center space-x-2">
+                                        <span id="verifikator-level-badge" class="bg-emerald-500 text-white text-[11px] font-extrabold px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm">Verifikator</span>
+                                        <span class="text-xs text-emerald-200 font-mono" id="verifikator-username-display">@username</span>
+                                    </div>
+                                    <h2 class="text-lg md:text-xl font-extrabold text-white mt-1" id="verifikator-title-display">Jabatan: Verifikator</h2>
+                                    <p class="text-xs text-emerald-100 mt-0.5" id="verifikator-desc-display">Memverifikasi laporan kegiatan dan capaian jam mahasiswa binaan.</p>
+                                </div>
+                            </div>
+                            <div class="bg-black/25 backdrop-blur-sm rounded-lg p-3.5 border border-white/10 max-w-xl w-full lg:w-auto">
+                                <p class="text-[11px] uppercase tracking-wider text-emerald-200 font-bold mb-2 flex items-center">
+                                    <i class="fa-solid fa-layer-group mr-1.5 text-yellow-300"></i> Cakupan Laporan yang Diverifikasi:
+                                </p>
+                                <div id="verifikator-scope-badges" class="flex flex-wrap gap-1.5">
+                                    <!-- Badges Cakupan diinjeksi via JS -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     
                     <!-- Filter Data Global -->
                     <div class="bg-white rounded-lg shadow-sm p-6 border mb-6">
@@ -772,8 +802,9 @@
                      TAB REKAP JUMLAH JAM MAHASISWA
                 ------------------------------------------ -->
                 <div id="admin-tab-rekap-jam" class="hidden space-y-6">
-                    <div class="flex justify-between items-center mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                         <h1 class="text-2xl font-bold text-gray-800">Rekap Jumlah Jam Mahasiswa</h1>
+                        <span id="badge-rekap-scope" class="hidden text-xs bg-emerald-100 text-emerald-800 font-semibold px-3 py-1.5 rounded-full border border-emerald-300 shadow-sm w-max"></span>
                     </div>
 
                     <!-- Filter Data Rekap -->
@@ -836,8 +867,9 @@
                      TAB LAPORAN DIVERIFIKASI
                 ------------------------------------------ -->
                 <div id="admin-tab-verifikasi" class="hidden space-y-6">
-                    <div class="flex justify-between items-center mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                         <h1 class="text-2xl font-bold text-gray-800 text-blue-700"><i class="fa-solid fa-check-double mr-2"></i>Daftar Laporan Diverifikasi</h1>
+                        <span id="badge-verif-scope" class="hidden text-xs bg-blue-100 text-blue-800 font-semibold px-3 py-1.5 rounded-full border border-blue-300 shadow-sm w-max"></span>
                     </div>
 
                     <!-- Toolbar Pencarian & Filter Verifikasi -->
@@ -893,8 +925,9 @@
                      TAB LAPORAN BELUM DIVERIFIKASI
                 ------------------------------------------ -->
                 <div id="admin-tab-belum-verif" class="hidden space-y-6">
-                    <div class="flex justify-between items-center mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                         <h1 class="text-2xl font-bold text-gray-800 text-gray-600"><i class="fa-solid fa-hourglass-half mr-2"></i>Daftar Laporan Belum Diverifikasi</h1>
+                        <span id="badge-belum-verif-scope" class="hidden text-xs bg-gray-200 text-gray-800 font-semibold px-3 py-1.5 rounded-full border border-gray-400 shadow-sm w-max"></span>
                     </div>
 
                     <!-- Toolbar Pencarian & Filter Belum Verifikasi -->
@@ -950,8 +983,9 @@
                      TAB LAPORAN DITOLAK
                 ------------------------------------------ -->
                 <div id="admin-tab-ditolak" class="hidden space-y-6">
-                    <div class="flex justify-between items-center mb-6">
+                    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6">
                         <h1 class="text-2xl font-bold text-gray-800 text-red-700"><i class="fa-solid fa-ban mr-2"></i>Daftar Laporan Ditolak</h1>
+                        <span id="badge-ditolak-scope" class="hidden text-xs bg-red-100 text-red-800 font-semibold px-3 py-1.5 rounded-full border border-red-300 shadow-sm w-max"></span>
                     </div>
 
                     <!-- Toolbar Pencarian & Filter Ditolak -->
@@ -1474,58 +1508,292 @@
         }
 
         // =========================================================================
-        // 5. RENDER UI BERDASARKAN HAK AKSES
+        // 5. RENDER UI BERDASARKAN HAK AKSES & SMART VERIFIER FILTER
         // =========================================================================
-        function renderBasedOnRole() {
-            let activeAccounts = [...accountsData];
-            let activeReports = [...mahasiswaReportsData];
+        
+        // Konfigurasi lengkap Jabatan & Kata Kunci Cakupan Tiap Verifikator
+        const VERIFIKATOR_CONFIG = {
+            'ver1ok': {
+                jabatan: 'Verifikator 1',
+                scope: ['Pendidikan Agama Islam', 'Bimbingan Konseling', 'Bahasa Inggris'],
+                keywords: [
+                    'PENDIDIKAN AGAMA ISLAM', 'AGAMA ISLAM', 'PAI',
+                    'BIMBINGAN KONSELING', 'BIMBINGAN DAN KONSELING', 'BKPI', 'BKI', 'BK',
+                    'BAHASA INGGRIS', 'PENDIDIKAN BAHASA INGGRIS', 'TBI', 'PBI', 'INGGRIS'
+                ],
+                excludeKeywords: []
+            },
+            'ver2ok': {
+                jabatan: 'Verifikator 2',
+                scope: ['Pendidikan Guru Madrasah Ibtidaiyah', 'Pendidikan Biologi', 'Pendidikan Matematika', 'Bahasa Arab'],
+                keywords: [
+                    'PENDIDIKAN GURU MADRASAH IBTIDAIYAH', 'MADRASAH IBTIDAIYAH', 'GURU MADRASAH', 'PGMI',
+                    'PENDIDIKAN BIOLOGI', 'BIOLOGI', 'PBIO',
+                    'PENDIDIKAN MATEMATIKA', 'MATEMATIKA', 'PMAT', 'PMA',
+                    'PENDIDIKAN BAHASA ARAB', 'BAHASA ARAB', 'ARAB', 'PBA'
+                ],
+                // Secara ketat mengecualikan seluruh KKN Tematik Magang agar Biologi Magang tidak masuk ke Ver2ok
+                excludeKeywords: ['MAGANG', 'KKN MAGANG', 'TEMATIK MAGANG']
+            },
+            'ver3ok': {
+                jabatan: 'Verifikator 3',
+                scope: ['Pendidikan Fisika', 'Ponpes', 'Dakwah', 'Magang', 'Manajemen Pendidikan Islam', 'Pendidikan Anak Usia Dini'],
+                keywords: [
+                    'PENDIDIKAN FISIKA', 'FISIKA', 'PFIS',
+                    'PONPES', 'PONDOK PESANTREN', 'PESANTREN',
+                    'DAKWAH', 'DAKWAH HUMANIS', 'KOMUNIKASI PENYIARAN ISLAM', 'KPI', 'PENGEMBANGAN MASYARAKAT ISLAM', 'PMI', 'MANAJEMEN DAKWAH', 'MD',
+                    'MAGANG', 'KKN MAGANG',
+                    'MANAJEMEN PENDIDIKAN ISLAM', 'MANAJEMEN PENDIDIKAN', 'MPI',
+                    'PENDIDIKAN ANAK USIA DINI', 'ANAK USIA DINI', 'PIAUD', 'PAUD'
+                ],
+                excludeKeywords: []
+            },
+            'ver4ok': {
+                jabatan: 'Verifikator 4',
+                scope: ['Lingkar Kampus'],
+                keywords: ['LINGKAR KAMPUS'],
+                excludeKeywords: []
+            }
+        };
 
-            if (currentUser && ['ver1ok', 'ver2ok', 'ver3ok', 'ver4ok'].includes(currentUser.username.toLowerCase())) {
-                activeAccounts = applyVerifikatorRules(currentUser, activeAccounts);
-                const allowedStudents = new Set(activeAccounts.map(a => a.username));
-                activeReports = activeReports.filter(rep => allowedStudents.has(rep.username));
+        // Algoritma Pencocokan Cerdas dengan Dukungan Pengecualian (Exclude Keywords)
+        function matchScopeKeywords(text, keywords, excludeKeywords = []) {
+            if (!text) return false;
+            const cleanText = String(text).toUpperCase();
+
+            // 1. Evaluasi kata kunci pengecualian (exclude) terlebih dahulu
+            if (excludeKeywords && excludeKeywords.length > 0) {
+                const hasExcluded = excludeKeywords.some(ex => {
+                    const cleanEx = ex.toUpperCase();
+                    if (cleanEx.length <= 4) {
+                        const regex = new RegExp(`(^|[^A-Z0-9])${cleanEx}([^A-Z0-9]|$)`, 'i');
+                        return regex.test(cleanText);
+                    }
+                    return cleanText.includes(cleanEx);
+                });
+                if (hasExcluded) return false;
             }
 
-            // Timpa data global sementara untuk render UI
-            const tempMhs = mahasiswaReportsData; 
-            const tempAcc = accountsData;
-            mahasiswaReportsData = activeReports;
-            accountsData = activeAccounts;
+            // 2. Evaluasi kata kunci cakupan (scope)
+            return keywords.some(kw => {
+                const cleanKw = kw.toUpperCase();
+                if (cleanKw.length <= 4) {
+                    const regex = new RegExp(`(^|[^A-Z0-9])${cleanKw}([^A-Z0-9]|$)`, 'i');
+                    return regex.test(cleanText);
+                }
+                return cleanText.includes(cleanKw);
+            });
+        }
 
-            if (!currentUser) renderPublicDashboard();
-            else if (currentUser.role === 'admin') renderAdminDashboard();
-            else if (currentUser.role === 'mahasiswa') {
+        // Memeriksa apakah profil mahasiswa termasuk dalam cakupan verifikator
+        function isStudentInVerifikatorScope(student, verUser) {
+            if (!verUser || verUser.role !== 'admin') return true;
+            const usr = (verUser.username || '').toLowerCase().trim();
+            const config = VERIFIKATOR_CONFIG[usr];
+            if (!config) return true; // Super admin melihat semua mahasiswa
+            
+            // Periksa kata kunci pengecualian langsung pada kelompok & prodi
+            if (config.excludeKeywords && config.excludeKeywords.length > 0) {
+                const studentExcludeText = [
+                    student.kelompok || '',
+                    student.jurusan || '',
+                    student.prodi || '',
+                    student.fakultas || ''
+                ].join(' ').toUpperCase();
+
+                const isExcluded = config.excludeKeywords.some(ex => {
+                    const cleanEx = ex.toUpperCase();
+                    if (cleanEx.length <= 4) {
+                        return new RegExp(`(^|[^A-Z0-9])${cleanEx}([^A-Z0-9]|$)`, 'i').test(studentExcludeText);
+                    }
+                    return studentExcludeText.includes(cleanEx);
+                });
+                if (isExcluded) return false;
+            }
+
+            const studentFields = [
+                student.fakultas || '',
+                student.kelompok || '',
+                student.jurusan || '',
+                student.prodi || '',
+                student.namaLengkap || '',
+                student.username || ''
+            ].join(' ');
+            return matchScopeKeywords(studentFields, config.keywords, config.excludeKeywords || []);
+        }
+
+        // Memeriksa apakah laporan kegiatan termasuk dalam cakupan verifikator
+        function isReportInVerifikatorScope(report, verUser) {
+            if (!verUser || verUser.role !== 'admin') return true;
+            const usr = (verUser.username || '').toLowerCase().trim();
+            const config = VERIFIKATOR_CONFIG[usr];
+            if (!config) return true; // Super admin melihat semua laporan
+
+            // 1. Cek pengecualian langsung pada metadata laporan (kelompok / jenis)
+            if (config.excludeKeywords && config.excludeKeywords.length > 0) {
+                const reportExcludeCheck = [
+                    report.kelompok || '',
+                    report.fakultas || '',
+                    report.rencana ? report.rencana.split(' | ')[0] : ''
+                ].join(' ').toUpperCase();
+
+                const isExcluded = config.excludeKeywords.some(ex => {
+                    const cleanEx = ex.toUpperCase();
+                    if (cleanEx.length <= 4) {
+                        return new RegExp(`(^|[^A-Z0-9])${cleanEx}([^A-Z0-9]|$)`, 'i').test(reportExcludeCheck);
+                    }
+                    return reportExcludeCheck.includes(cleanEx);
+                });
+                if (isExcluded) return false;
+            }
+
+            // 2. Cek lewat akun mahasiswa terkait
+            const student = accountsData.find(a => (a.username || '').toLowerCase().trim() === (report.username || '').toLowerCase().trim());
+            if (student) {
+                return isStudentInVerifikatorScope(student, verUser);
+            }
+
+            // 3. Fallback jika data akun belum termuat di memori
+            const reportFields = [
+                report.fakultas || '',
+                report.kelompok || '',
+                report.rencana || '',
+                report.namaLengkap || '',
+                report.username || ''
+            ].join(' ');
+            return matchScopeKeywords(reportFields, config.keywords, config.excludeKeywords || []);
+        }
+
+        // Mengambil daftar akun aktif sesuai wewenang verifikator
+        function getActiveAccounts() {
+            if (!currentUser || currentUser.role !== 'admin') return accountsData;
+            const usr = (currentUser.username || '').toLowerCase().trim();
+            if (!VERIFIKATOR_CONFIG[usr]) return accountsData;
+            return accountsData.filter(acc => acc.role === 'admin' || isStudentInVerifikatorScope(acc, currentUser));
+        }
+
+        // Mengambil daftar laporan aktif sesuai wewenang verifikator
+        function getActiveReports() {
+            if (!currentUser || currentUser.role !== 'admin') return mahasiswaReportsData;
+            const usr = (currentUser.username || '').toLowerCase().trim();
+            if (!VERIFIKATOR_CONFIG[usr]) return mahasiswaReportsData;
+            return mahasiswaReportsData.filter(rep => isReportInVerifikatorScope(rep, currentUser));
+        }
+
+        function renderBasedOnRole() {
+            applyVerifikatorRules(currentUser);
+
+            if (!currentUser) {
+                renderPublicDashboard();
+            } else if (currentUser.role === 'admin') {
+                updateVerifikatorUIBanner();
+                updateScopeBadgesInTabs();
+                renderAdminDashboard();
+            } else if (currentUser.role === 'mahasiswa') {
                 updateMahasiswaUIProfile();
                 renderMahasiswaDashboard();
             }
-
-            // Kembalikan data utuh
-            mahasiswaReportsData = tempMhs;
-            accountsData = tempAcc;
         }
 
-        function applyVerifikatorRules(currentUser, allMhs) {
-            const isVerAkun = ['ver1ok', 'ver2ok', 'ver3ok', 'ver4ok'].includes(currentUser.username.toLowerCase());
+        // Helper untuk mencari nama Fakultas mahasiswa berdasarkan data akun spreadsheet
+        function getStudentFakultas(username) {
+            if (!username) return '-';
+            const user = accountsData.find(a => (a.username || '').toLowerCase().trim() === String(username).toLowerCase().trim());
+            return (user && user.fakultas && user.fakultas.trim() !== '' && user.fakultas.trim() !== '-') ? user.fakultas.trim() : '-';
+        }
+
+        // Tampilan Banner Jabatan dan Cakupan Verifikator di Dashboard
+        function updateVerifikatorUIBanner() {
+            const banner = document.getElementById('verifikator-info-banner');
+            const roleBadge = document.getElementById('admin-role-badge');
+            if (!banner) return;
+
+            if (!currentUser || currentUser.role !== 'admin') {
+                banner.classList.add('hidden');
+                return;
+            }
+
+            const usr = (currentUser.username || '').toLowerCase().trim();
+            const config = VERIFIKATOR_CONFIG[usr];
+
+            if (config) {
+                banner.classList.remove('hidden');
+                const lvlBadge = document.getElementById('verifikator-level-badge');
+                const usrDisplay = document.getElementById('verifikator-username-display');
+                const titleDisplay = document.getElementById('verifikator-title-display');
+                const descDisplay = document.getElementById('verifikator-desc-display');
+                const badgesContainer = document.getElementById('verifikator-scope-badges');
+
+                if (lvlBadge) lvlBadge.innerText = config.jabatan;
+                if (usrDisplay) usrDisplay.innerText = `@${currentUser.username}`;
+                if (titleDisplay) titleDisplay.innerText = `Jabatan: ${config.jabatan}`;
+                
+                let descText = `Menangani monitoring dan verifikasi laporan kegiatan mahasiswa untuk ${config.scope.length} program/bidang studi.`;
+                if (usr === 'ver2ok') {
+                    descText = `Menangani monitoring dan verifikasi laporan kegiatan mahasiswa PGMI, Pendidikan Biologi, Matematika, dan Bahasa Arab.`;
+                }
+                if (descDisplay) descDisplay.innerText = descText;
+
+                if (badgesContainer) {
+                    const scopeBadges = config.scope.map(s => `
+                        <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-semibold bg-emerald-900/80 text-emerald-100 border border-emerald-500/40 shadow-sm">
+                            <i class="fa-solid fa-circle-check text-[10px] text-emerald-300 mr-1.5"></i>${s}
+                        </span>
+                    `).join('');
+
+                    badgesContainer.innerHTML = scopeBadges;
+                }
+
+                if (roleBadge) {
+                    roleBadge.className = 'text-xs font-semibold px-3 py-1 rounded-full w-max shadow-sm bg-emerald-100 text-emerald-800 border border-emerald-300';
+                    roleBadge.innerHTML = `<i class="fa-solid fa-user-shield mr-1"></i> ${config.jabatan}`;
+                    roleBadge.classList.remove('hidden');
+                }
+            } else {
+                banner.classList.add('hidden');
+                if (roleBadge) {
+                    roleBadge.className = 'text-xs font-semibold px-3 py-1 rounded-full w-max shadow-sm bg-gray-100 text-gray-800 border border-gray-300';
+                    roleBadge.innerHTML = `<i class="fa-solid fa-shield-halved mr-1"></i> Administrator Utama`;
+                    roleBadge.classList.remove('hidden');
+                }
+            }
+        }
+
+        // Tampilkan lencana filter pintar di tiap tab Rekap & Analitik
+        function updateScopeBadgesInTabs() {
+            const usr = (currentUser?.username || '').toLowerCase().trim();
+            const config = VERIFIKATOR_CONFIG[usr];
+            const badgeIds = ['badge-rekap-scope', 'badge-belum-verif-scope', 'badge-verif-scope', 'badge-ditolak-scope'];
+
+            badgeIds.forEach(id => {
+                const badge = document.getElementById(id);
+                if (!badge) return;
+                if (config) {
+                    badge.classList.remove('hidden');
+                    badge.innerHTML = `<i class="fa-solid fa-filter mr-1.5"></i>Filter Otomatis: <b>${config.jabatan}</b> (${config.scope.join(', ')})`;
+                } else {
+                    badge.classList.add('hidden');
+                }
+            });
+        }
+
+        function applyVerifikatorRules(user) {
+            if (!user) return;
+            const usr = (user.username || '').toLowerCase().trim();
+            const config = VERIFIKATOR_CONFIG[usr];
+            const isVerAkun = !!config;
+
             if (isVerAkun) {
                 ['group-laporan-mhs', 'group-pengaturan'].forEach(id => {
                     const el = document.getElementById(id);
                     if (el) el.classList.add('hidden');
                 });
+            } else {
+                ['group-laporan-mhs', 'group-pengaturan'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.classList.remove('hidden');
+                });
             }
-
-            if (!isVerAkun) return allMhs;
-
-            return allMhs.filter(m => {
-                if (m.role === 'admin') return true;
-                const info = ((m.fakultas || '') + ' ' + (m.kelompok || '')).toUpperCase();
-                const usr = currentUser.username.toLowerCase();
-                
-                if (usr === 'ver1ok') return ['BIMBINGAN KONSELING', 'PENDIDIKAN AGAMA ISLAM', 'INGGRIS'].some(x => info.includes(x)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
-                if (usr === 'ver2ok') return ['MADRASAH IBTIDAIYAH', 'BIOLOGI', 'MATEMATIKA'].some(x => info.includes(x)) && !info.includes('MAGANG') && !info.includes('PONPES') && !info.includes('DAKWAH');
-                if (usr === 'ver3ok') return info.includes('PONPES') || info.includes('MAGANG') || info.includes('DAKWAH') || info.includes('ANAK USIA DINI') || info.includes('FISIKA');
-                if (usr === 'ver4ok') return info.includes('LINGKAR KAMPUS');
-                return false;
-            });
         }
 
         function updateMahasiswaUIProfile() {
@@ -2138,7 +2406,7 @@
             const search = document.getElementById('search-mhs') ? document.getElementById('search-mhs').value.toLowerCase() : '';
             const jenis = document.getElementById('filter-jenis-mhs') ? document.getElementById('filter-jenis-mhs').value : '';
             
-            filteredDataMhs = mahasiswaReportsData;
+            filteredDataMhs = getActiveReports();
             if(currentAdminMhsTheme !== 'ALL') filteredDataMhs = filteredDataMhs.filter(r => (r.kelompok||'').toUpperCase().includes(currentAdminMhsTheme));
             if(dateKegiatan) filteredDataMhs = filteredDataMhs.filter(r => r.tanggal === dateKegiatan);
             if(dateKirim) filteredDataMhs = filteredDataMhs.filter(r => extractDateFromTimestamp(r.timestamp || r.Timestamp || r.waktu || r.Waktu) === dateKirim);
@@ -2156,8 +2424,11 @@
                 const parts = (r.rencana||'').split(' | '), jenis = parts[0], desk = parts[1]||'', isDiakui = parts[2] !== 'TIDAK_DIAKUI', isVerif = parts[3] === 'VERIFIED';
                 const jamHtml = isDiakui ? `<div class="text-xs text-emerald-600 mt-1 font-medium">Durasi: ${r.keluhan} Jam</div>` : `<div class="text-xs text-red-500 mt-1 line-through">Durasi: ${r.keluhan} Jam</div><div class="text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded inline-block">Ditolak</div>`;
                 const verifHtml = isVerif ? `<div class="text-[10px] text-blue-600 font-bold mt-1 bg-blue-50 px-1.5 py-0.5 rounded inline-block">Terverifikasi</div>` : `<div class="text-[10px] text-gray-400 font-bold mt-1 bg-gray-50 px-1.5 py-0.5 rounded inline-block">Belum Verif</div>`;
+                const fak = (r.fakultas && r.fakultas !== '-') ? r.fakultas : getStudentFakultas(r.username);
+                const fakHtml = fak !== '-' ? `<div class="text-xs text-emerald-700 font-medium mt-0.5 flex items-center"><i class="fa-solid fa-graduation-cap text-[10px] mr-1 text-emerald-600"></i>${fak}</div>` : '<div class="text-xs text-gray-400 italic mt-0.5">Fakultas -</div>';
+
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td class="px-6 py-4 text-center"><input type="checkbox" class="row-checkbox-admin-mhs" value="${r.id}" onchange="updateBulkActionStateAdminMhs()"></td><td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 text-xs font-mono text-gray-500">${getTimestampStr(r)}</td><td class="px-6 py-4 font-medium text-purple-600"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4">${r.kelompok}</td><td class="px-6 py-4"><div class="text-sm font-bold">${jenis}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${desk}</div><div class="flex items-center space-x-2">${jamHtml}${verifHtml}</div></td><td class="px-6 py-4 text-center space-x-2"><a href="${r.foto}" target="_blank" class="text-purple-500 bg-purple-50 p-2 rounded-full inline-block"><i class="fa-solid fa-image"></i></a><button onclick="deleteMahasiswaReport('${r.id}', this)" class="text-red-500 bg-red-50 p-2 rounded-full"><i class="fa-solid fa-trash"></i></button></td>`;
+                tr.innerHTML = `<td class="px-6 py-4 text-center"><input type="checkbox" class="row-checkbox-admin-mhs" value="${r.id}" onchange="updateBulkActionStateAdminMhs()"></td><td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 text-xs font-mono text-gray-500">${getTimestampStr(r)}</td><td class="px-6 py-4 font-medium text-purple-600"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4"><div><span class="font-semibold text-gray-800">${r.kelompok}</span></div>${fakHtml}</td><td class="px-6 py-4"><div class="text-sm font-bold">${jenis}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${desk}</div><div class="flex items-center space-x-2">${jamHtml}${verifHtml}</div></td><td class="px-6 py-4 text-center space-x-2"><a href="${r.foto}" target="_blank" class="text-purple-500 bg-purple-50 p-2 rounded-full inline-block"><i class="fa-solid fa-image"></i></a><button onclick="deleteMahasiswaReport('${r.id}', this)" class="text-red-500 bg-red-50 p-2 rounded-full"><i class="fa-solid fa-trash"></i></button></td>`;
                 tbody.appendChild(tr);
             });
             renderPagination('pagination-mhs', totalPages, currentPageMhs, 'Mhs');
@@ -2171,8 +2442,14 @@
 
         // Verif Filters
         function applyAdminBelumVerifFilters() {
-            const search = document.getElementById('search-belum-verif')?.value.toLowerCase()||'', jenis = document.getElementById('filter-jenis-belum-verif')?.value||'';
-            filteredDataBelumVerif = mahasiswaReportsData.filter(r => (r.rencana||'').split(' | ')[3] !== 'VERIFIED');
+            const dateKegiatan = document.querySelector('.global-date-input')?.value || '';
+            const dateKirim = document.querySelector('.global-timestamp-input')?.value || '';
+            const search = document.getElementById('search-belum-verif')?.value.toLowerCase()||'';
+            const jenis = document.getElementById('filter-jenis-belum-verif')?.value||'';
+
+            filteredDataBelumVerif = getActiveReports().filter(r => (r.rencana||'').split(' | ')[3] !== 'VERIFIED');
+            if(dateKegiatan) filteredDataBelumVerif = filteredDataBelumVerif.filter(r => r.tanggal === dateKegiatan);
+            if(dateKirim) filteredDataBelumVerif = filteredDataBelumVerif.filter(r => extractDateFromTimestamp(r.timestamp || r.Timestamp || r.waktu || r.Waktu) === dateKirim);
             if(search) filteredDataBelumVerif = filteredDataBelumVerif.filter(r => (r.namaLengkap||r.username||'').toLowerCase().includes(search) || (r.kelompok||'').toLowerCase().includes(search));
             if(jenis) filteredDataBelumVerif = filteredDataBelumVerif.filter(r => (r.rencana||'').split(' | ')[0] === jenis);
             currentPageBelumVerif = 1; renderAdminTableBelumVerif(filteredDataBelumVerif);
@@ -2183,14 +2460,25 @@
             const sorted = sortData([...data], 'BelumVerif'), totalPages = Math.ceil(sorted.length/itemsPerPage), start = (currentPageBelumVerif-1)*itemsPerPage, pageData = sorted.slice(start, start+itemsPerPage);
             pageData.forEach(r => {
                 const parts = (r.rencana||'').split(' | '), tr = document.createElement('tr');
-                tr.innerHTML = `<td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 font-medium text-gray-700"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4">${r.kelompok||'-'}</td><td class="px-6 py-4"><div class="text-sm font-bold">${parts[0]}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${parts[1]||''}</div><div class="text-xs text-emerald-600 mt-1 font-medium">Durasi: ${r.keluhan} Jam</div></td><td class="px-6 py-4 text-center space-x-2"><span class="text-[10px] text-gray-600 font-bold bg-gray-100 px-2 py-1 rounded inline-block mr-2">BELUM VERIF</span><button onclick="openRincianModal('${r.username}')" class="text-blue-500 bg-blue-50 p-2 rounded-full"><i class="fa-solid fa-user-check"></i></button></td>`;
+                const fak = (r.fakultas && r.fakultas !== '-') ? r.fakultas : getStudentFakultas(r.username);
+                const fakHtml = fak !== '-' 
+                    ? `<div class="text-xs text-emerald-700 font-medium mt-0.5 flex items-center"><i class="fa-solid fa-graduation-cap text-[10px] mr-1 text-emerald-600"></i>${fak}</div>`
+                    : '<div class="text-xs text-gray-400 italic mt-0.5">Fakultas -</div>';
+
+                tr.innerHTML = `<td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 font-medium text-gray-700"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4"><div><span class="font-semibold text-gray-800">${r.kelompok||'-'}</span></div>${fakHtml}</td><td class="px-6 py-4"><div class="text-sm font-bold">${parts[0]}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${parts[1]||''}</div><div class="text-xs text-emerald-600 mt-1 font-medium">Durasi: ${r.keluhan} Jam</div></td><td class="px-6 py-4 text-center space-x-2"><span class="text-[10px] text-gray-600 font-bold bg-gray-100 px-2 py-1 rounded inline-block mr-2">BELUM VERIF</span><button onclick="openRincianModal('${r.username}')" class="text-blue-500 bg-blue-50 p-2 rounded-full hover:bg-blue-100 transition shadow-sm"><i class="fa-solid fa-user-check"></i></button></td>`;
                 tbody.appendChild(tr);
             });
             renderPagination('pagination-belum-verif', totalPages, currentPageBelumVerif, 'BelumVerif');
         }
         function applyAdminVerifFilters() {
-            const search = document.getElementById('search-verif')?.value.toLowerCase()||'', jenis = document.getElementById('filter-jenis-verif')?.value||'';
-            filteredDataVerif = mahasiswaReportsData.filter(r => (r.rencana||'').split(' | ')[3] === 'VERIFIED');
+            const dateKegiatan = document.querySelector('.global-date-input')?.value || '';
+            const dateKirim = document.querySelector('.global-timestamp-input')?.value || '';
+            const search = document.getElementById('search-verif')?.value.toLowerCase()||'';
+            const jenis = document.getElementById('filter-jenis-verif')?.value||'';
+
+            filteredDataVerif = getActiveReports().filter(r => (r.rencana||'').split(' | ')[3] === 'VERIFIED');
+            if(dateKegiatan) filteredDataVerif = filteredDataVerif.filter(r => r.tanggal === dateKegiatan);
+            if(dateKirim) filteredDataVerif = filteredDataVerif.filter(r => extractDateFromTimestamp(r.timestamp || r.Timestamp || r.waktu || r.Waktu) === dateKirim);
             if(search) filteredDataVerif = filteredDataVerif.filter(r => (r.namaLengkap||r.username||'').toLowerCase().includes(search) || (r.kelompok||'').toLowerCase().includes(search));
             if(jenis) filteredDataVerif = filteredDataVerif.filter(r => (r.rencana||'').split(' | ')[0] === jenis);
             currentPageVerif = 1; renderAdminTableVerif(filteredDataVerif);
@@ -2201,14 +2489,25 @@
             const sorted = sortData([...data], 'Verif'), totalPages = Math.ceil(sorted.length/itemsPerPage), start = (currentPageVerif-1)*itemsPerPage, pageData = sorted.slice(start, start+itemsPerPage);
             pageData.forEach(r => {
                 const parts = (r.rencana||'').split(' | '), tr = document.createElement('tr');
-                tr.innerHTML = `<td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 font-medium text-blue-700"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4">${r.kelompok||'-'}</td><td class="px-6 py-4"><div class="text-sm font-bold">${parts[0]}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${parts[1]||''}</div><div class="text-xs text-emerald-600 mt-1 font-medium">Durasi: ${r.keluhan} Jam</div></td><td class="px-6 py-4 text-center space-x-2"><span class="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded inline-block mr-2"><i class="fa-solid fa-check-double"></i> VERIFIED</span><button onclick="openRincianModal('${r.username}')" class="text-gray-500 bg-gray-100 p-2 rounded-full"><i class="fa-solid fa-user-gear"></i></button></td>`;
+                const fak = (r.fakultas && r.fakultas !== '-') ? r.fakultas : getStudentFakultas(r.username);
+                const fakHtml = fak !== '-' 
+                    ? `<div class="text-xs text-emerald-700 font-medium mt-0.5 flex items-center"><i class="fa-solid fa-graduation-cap text-[10px] mr-1 text-emerald-600"></i>${fak}</div>`
+                    : '<div class="text-xs text-gray-400 italic mt-0.5">Fakultas -</div>';
+
+                tr.innerHTML = `<td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 font-medium text-blue-700"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4"><div><span class="font-semibold text-gray-800">${r.kelompok||'-'}</span></div>${fakHtml}</td><td class="px-6 py-4"><div class="text-sm font-bold">${parts[0]}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${parts[1]||''}</div><div class="text-xs text-emerald-600 mt-1 font-medium">Durasi: ${r.keluhan} Jam</div></td><td class="px-6 py-4 text-center space-x-2"><span class="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded inline-block mr-2"><i class="fa-solid fa-check-double"></i> VERIFIED</span><button onclick="openRincianModal('${r.username}')" class="text-gray-500 bg-gray-100 p-2 rounded-full hover:bg-gray-200 transition shadow-sm"><i class="fa-solid fa-user-gear"></i></button></td>`;
                 tbody.appendChild(tr);
             });
             renderPagination('pagination-verif', totalPages, currentPageVerif, 'Verif');
         }
         function applyAdminTolakFilters() {
-            const search = document.getElementById('search-tolak')?.value.toLowerCase()||'', jenis = document.getElementById('filter-jenis-tolak')?.value||'';
-            filteredDataTolak = mahasiswaReportsData.filter(r => (r.rencana||'').split(' | ')[2] === 'TIDAK_DIAKUI');
+            const dateKegiatan = document.querySelector('.global-date-input')?.value || '';
+            const dateKirim = document.querySelector('.global-timestamp-input')?.value || '';
+            const search = document.getElementById('search-tolak')?.value.toLowerCase()||'';
+            const jenis = document.getElementById('filter-jenis-tolak')?.value||'';
+
+            filteredDataTolak = getActiveReports().filter(r => (r.rencana||'').split(' | ')[2] === 'TIDAK_DIAKUI');
+            if(dateKegiatan) filteredDataTolak = filteredDataTolak.filter(r => r.tanggal === dateKegiatan);
+            if(dateKirim) filteredDataTolak = filteredDataTolak.filter(r => extractDateFromTimestamp(r.timestamp || r.Timestamp || r.waktu || r.Waktu) === dateKirim);
             if(search) filteredDataTolak = filteredDataTolak.filter(r => (r.namaLengkap||r.username||'').toLowerCase().includes(search) || (r.kelompok||'').toLowerCase().includes(search));
             if(jenis) filteredDataTolak = filteredDataTolak.filter(r => (r.rencana||'').split(' | ')[0] === jenis);
             currentPageTolak = 1; renderAdminTableTolak(filteredDataTolak);
@@ -2219,7 +2518,12 @@
             const sorted = sortData([...data], 'Tolak'), totalPages = Math.ceil(sorted.length/itemsPerPage), start = (currentPageTolak-1)*itemsPerPage, pageData = sorted.slice(start, start+itemsPerPage);
             pageData.forEach(r => {
                 const parts = (r.rencana||'').split(' | '), tr = document.createElement('tr');
-                tr.innerHTML = `<td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 font-medium text-red-700"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4">${r.kelompok||'-'}</td><td class="px-6 py-4"><div class="text-sm font-bold">${parts[0]}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${parts[1]||''}</div><div class="text-xs text-red-500 mt-1 line-through">Durasi: ${r.keluhan} Jam</div></td><td class="px-6 py-4 text-center space-x-2"><span class="text-[10px] text-red-600 font-bold bg-red-100 px-2 py-1 rounded inline-block mr-2"><i class="fa-solid fa-xmark"></i> DITOLAK</span><button onclick="openRincianModal('${r.username}')" class="text-gray-500 bg-gray-100 p-2 rounded-full"><i class="fa-solid fa-user-gear"></i></button></td>`;
+                const fak = (r.fakultas && r.fakultas !== '-') ? r.fakultas : getStudentFakultas(r.username);
+                const fakHtml = fak !== '-' 
+                    ? `<div class="text-xs text-emerald-700 font-medium mt-0.5 flex items-center"><i class="fa-solid fa-graduation-cap text-[10px] mr-1 text-emerald-600"></i>${fak}</div>`
+                    : '<div class="text-xs text-gray-400 italic mt-0.5">Fakultas -</div>';
+
+                tr.innerHTML = `<td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 font-medium text-red-700"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4"><div><span class="font-semibold text-gray-800">${r.kelompok||'-'}</span></div>${fakHtml}</td><td class="px-6 py-4"><div class="text-sm font-bold">${parts[0]}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${parts[1]||''}</div><div class="text-xs text-red-500 mt-1 line-through">Durasi: ${r.keluhan} Jam</div></td><td class="px-6 py-4 text-center space-x-2"><span class="text-[10px] text-red-600 font-bold bg-red-100 px-2 py-1 rounded inline-block mr-2"><i class="fa-solid fa-xmark"></i> DITOLAK</span><button onclick="openRincianModal('${r.username}')" class="text-gray-500 bg-gray-100 p-2 rounded-full hover:bg-gray-200 transition shadow-sm"><i class="fa-solid fa-user-gear"></i></button></td>`;
                 tbody.appendChild(tr);
             });
             renderPagination('pagination-tolak', totalPages, currentPageTolak, 'Tolak');
@@ -2230,13 +2534,18 @@
             const dateKegiatan = document.querySelector('.global-date-input')?.value||'';
             const dateKirim = document.querySelector('.global-timestamp-input')?.value||'';
             
-            let globalMhs = mahasiswaReportsData;
+            let globalMhs = getActiveReports();
             if(dateKegiatan) globalMhs = globalMhs.filter(r => r.tanggal === dateKegiatan);
             if(dateKirim) globalMhs = globalMhs.filter(r => extractDateFromTimestamp(r.timestamp || r.Timestamp || r.waktu || r.Waktu) === dateKirim);
 
-            const allMhs = accountsData.filter(a => a.role === 'mahasiswa'), valTotalMhs = allMhs.length;
+            const allMhs = getActiveAccounts().filter(a => a.role === 'mahasiswa');
+            const valTotalMhs = allMhs.length;
             if(document.getElementById('stat-mhs')) document.getElementById('stat-mhs').innerText = valTotalMhs;
-            const repMhsSet = new Set(globalMhs.map(r => r.username)), repMhs = allMhs.filter(m => repMhsSet.has(m.username)), unrepMhs = allMhs.filter(m => !repMhsSet.has(m.username));
+            
+            const repMhsSet = new Set(globalMhs.map(r => r.username));
+            const repMhs = allMhs.filter(m => repMhsSet.has(m.username));
+            const unrepMhs = allMhs.filter(m => !repMhsSet.has(m.username));
+            
             if(document.getElementById('count-rep-mhs')) document.getElementById('count-rep-mhs').innerText = repMhs.length;
             if(document.getElementById('pct-mhs')) document.getElementById('pct-mhs').innerText = valTotalMhs ? ((repMhs.length/valTotalMhs)*100).toFixed(1).replace('.',',')+'%' : '0%';
             if(document.getElementById('stat-rep-mhs')) document.getElementById('stat-rep-mhs').innerText = globalMhs.length;
@@ -2256,6 +2565,35 @@
 
             currentUnreportedMhs = unrepMhs;
             renderAdminMultiChart(globalMhs);
+            renderUnreportedLists(unrepMhs);
+        }
+
+        // Render daftar mahasiswa yang belum melapor sesuai filter cakupan
+        function renderUnreportedLists(unrepList) {
+            const badgeTotal = document.getElementById('badge-unreported-mhs-total');
+            if (badgeTotal) badgeTotal.innerText = `Total: ${unrepList.length}`;
+
+            const themes = [
+                { id: 'ponpes', key: 'PONPES' },
+                { id: 'mengajar', key: 'MENGAJAR' },
+                { id: 'dakwah', key: 'DAKWAH' },
+                { id: 'magang', key: 'MAGANG' }
+            ];
+
+            themes.forEach(t => {
+                const subList = unrepList.filter(m => (m.kelompok || '').toUpperCase().includes(t.key));
+                const badge = document.getElementById(`badge-unrep-${t.id}`);
+                const listEl = document.getElementById(`list-unrep-${t.id}`);
+                if (badge) badge.innerText = subList.length;
+                if (listEl) {
+                    listEl.innerHTML = subList.length === 0 
+                        ? '<li class="text-xs text-emerald-600 italic py-1"><i class="fa-solid fa-check mr-1"></i>Semua sudah lapor</li>' 
+                        : subList.map(m => {
+                            const fak = (m.fakultas && m.fakultas !== '-') ? m.fakultas : getStudentFakultas(m.username);
+                            return `<li class="py-1 border-b border-gray-100 last:border-0"><div class="font-medium text-gray-800 text-xs">${m.namaLengkap || m.username}</div><div class="text-[10px] text-gray-500">${m.kelompok || '-'} &bull; ${fak}</div></li>`;
+                        }).join('');
+                }
+            });
         }
 
         function resetPublicFilters() {
@@ -2304,32 +2642,118 @@
         }
         function populateRekapKelompokFilter() {
             const sel = document.getElementById('filter-kelompok-rekap'); if(!sel) return;
-            const cur = sel.value, klps = [...new Set(accountsData.filter(a=>a.role==='mahasiswa').map(a=>a.kelompok).filter(k=>k&&k!=='-'))].sort();
-            sel.innerHTML = '<option value="">Semua Kelompok</option>'; klps.forEach(k => { const o = document.createElement('option'); o.value=k; o.innerText=k; sel.appendChild(o); });
+            const cur = sel.value;
+            const klps = [...new Set(getActiveAccounts().filter(a=>a.role==='mahasiswa').map(a=>a.kelompok).filter(k=>k&&k!=='-'))].sort();
+            sel.innerHTML = '<option value="">Semua Kelompok</option>'; 
+            klps.forEach(k => { const o = document.createElement('option'); o.value=k; o.innerText=k; sel.appendChild(o); });
             sel.value = klps.includes(cur) ? cur : '';
         }
         function applyAdminRekapFilter() {
             const filterKlp = document.getElementById('filter-kelompok-rekap')?.value||'', search = document.getElementById('search-rekap')?.value.toLowerCase()||'';
-            let mhsList = accountsData.filter(a => a.role === 'mahasiswa');
+            let mhsList = getActiveAccounts().filter(a => a.role === 'mahasiswa');
             if(filterKlp) mhsList = mhsList.filter(m => m.kelompok === filterKlp);
             if(search) mhsList = mhsList.filter(m => (m.namaLengkap||'').toLowerCase().includes(search) || (m.username||'').toLowerCase().includes(search));
             
+            const activeReports = getActiveReports();
             const jamMap = {};
-            mahasiswaReportsData.forEach(r => { if(!jamMap[r.username]) jamMap[r.username]=0; if((r.rencana||'').split(' | ')[2]!=='TIDAK_DIAKUI') jamMap[r.username]+=Number(r.keluhan||0); });
+            activeReports.forEach(r => { 
+                if(!jamMap[r.username]) jamMap[r.username]=0; 
+                if((r.rencana||'').split(' | ')[2]!=='TIDAK_DIAKUI') jamMap[r.username]+=Number(r.keluhan||0); 
+            });
             
-            let rekapData = mhsList.map(m => { const j=jamMap[m.username]||0; return {...m, totalJam: j, pStr: ((j/181)*100).toFixed(2), pVal: Number(((j/181)*100).toFixed(2))}; });
+            let rekapData = mhsList.map(m => { 
+                const j = jamMap[m.username] || 0; 
+                return { ...m, totalJam: j, pStr: ((j/181)*100).toFixed(2), pVal: Number(((j/181)*100).toFixed(2)) }; 
+            });
             const {col, dir} = sortState['Rekap'];
-            rekapData.sort((a,b) => { let vA=a[col], vB=b[col]; if(col==='namaLengkap'){vA=(a.namaLengkap||a.username).toLowerCase(); vB=(b.namaLengkap||b.username).toLowerCase();}else if(col==='kelompok'){vA=(a.kelompok||'').toLowerCase(); vB=(b.kelompok||'').toLowerCase();}else if(col==='totalJam'){vA=a.totalJam; vB=b.totalJam;}else if(col==='persentase'){vA=a.pVal; vB=b.pVal;} if(vA<vB) return dir==='asc'?-1:1; if(vA>vB) return dir==='asc'?1:-1; return 0;});
+            rekapData.sort((a,b) => { 
+                let vA=a[col], vB=b[col]; 
+                if(col==='namaLengkap'){vA=(a.namaLengkap||a.username).toLowerCase(); vB=(b.namaLengkap||b.username).toLowerCase();}
+                else if(col==='kelompok'){vA=(a.kelompok||'').toLowerCase(); vB=(b.kelompok||'').toLowerCase();}
+                else if(col==='totalJam'){vA=a.totalJam; vB=b.totalJam;}
+                else if(col==='persentase'){vA=a.pVal; vB=b.pVal;} 
+                if(vA<vB) return dir==='asc'?-1:1; 
+                if(vA>vB) return dir==='asc'?1:-1; 
+                return 0;
+            });
             
             const tbody = document.getElementById('admin-rekap-table-body'); if(!tbody) return; tbody.innerHTML = '';
             if(rekapData.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Tidak ada data</td></tr>'; return; }
             rekapData.forEach((m,i) => {
                 let badge = 'bg-red-100 text-red-800 border border-red-200'; if(m.pVal >= 100) badge = 'bg-emerald-100 text-emerald-800 border border-emerald-300'; else if(m.pVal >= 50) badge = 'bg-yellow-100 text-yellow-800 border border-yellow-300';
+                const mhsFakultas = (m.fakultas && m.fakultas !== '-') ? m.fakultas : getStudentFakultas(m.username);
+                const fakultasHtml = mhsFakultas && mhsFakultas !== '-' 
+                    ? `<div class="text-xs text-emerald-700 font-medium mt-0.5 flex items-center"><i class="fa-solid fa-graduation-cap text-[10px] mr-1 text-emerald-600"></i>${mhsFakultas}</div>`
+                    : '<div class="text-xs text-gray-400 italic mt-0.5">Fakultas -</div>';
+
                 const tr = document.createElement('tr');
-                tr.innerHTML = `<td class="px-4 py-3 text-center">${i+1}</td><td class="px-4 py-3 font-medium text-purple-600"><div>${m.namaLengkap||m.username}</div><div class="text-xs text-gray-500">@${m.username}</div></td><td class="px-4 py-3">${m.kelompok||'-'}</td><td class="px-4 py-3 text-center font-bold">${m.totalJam} Jam</td><td class="px-4 py-3 text-center"><span class="px-2.5 py-1 text-xs font-bold rounded-full ${badge}">${m.pStr.replace('.',',')}%</span></td><td class="px-4 py-3 text-center"><button onclick="openRincianModal('${m.username}')" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded text-xs font-bold border border-blue-200">Rincian & Verifikasi</button></td>`;
+                tr.innerHTML = `<td class="px-4 py-3 text-center">${i+1}</td><td class="px-4 py-3 font-medium text-purple-600"><div>${m.namaLengkap||m.username}</div><div class="text-xs text-gray-500">@${m.username}</div></td><td class="px-4 py-3"><div><span class="font-semibold text-gray-800">${m.kelompok||'-'}</span></div>${fakultasHtml}</td><td class="px-4 py-3 text-center font-bold">${m.totalJam} Jam</td><td class="px-4 py-3 text-center"><span class="px-2.5 py-1 text-xs font-bold rounded-full ${badge}">${m.pStr.replace('.',',')}%</span></td><td class="px-4 py-3 text-center"><button onclick="openRincianModal('${m.username}')" class="bg-blue-50 text-blue-600 px-3 py-1.5 rounded text-xs font-bold border border-blue-200 hover:bg-blue-100 transition shadow-sm">Rincian & Verifikasi</button></td>`;
                 tbody.appendChild(tr);
             });
         }
+
+        // Fungsi Ekspor Excel (CSV dengan UTF-8 BOM untuk Excel)
+        function downloadRekapExcel() {
+            const filterKlp = document.getElementById('filter-kelompok-rekap')?.value || '';
+            const search = document.getElementById('search-rekap')?.value.toLowerCase() || '';
+            let mhsList = getActiveAccounts().filter(a => a.role === 'mahasiswa');
+            if (filterKlp) mhsList = mhsList.filter(m => m.kelompok === filterKlp);
+            if (search) mhsList = mhsList.filter(m => (m.namaLengkap || '').toLowerCase().includes(search) || (m.username || '').toLowerCase().includes(search));
+
+            const jamMap = {};
+            getActiveReports().forEach(r => {
+                if (!jamMap[r.username]) jamMap[r.username] = 0;
+                if ((r.rencana || '').split(' | ')[2] !== 'TIDAK_DIAKUI') jamMap[r.username] += Number(r.keluhan || 0);
+            });
+
+            let csvContent = "\uFEFFNo,NIM,Nama Mahasiswa,Username,Kelompok,Fakultas,Total Jam,Persentase (Target 181 Jam),Status Capaian\n";
+            mhsList.forEach((m, idx) => {
+                const jam = jamMap[m.username] || 0;
+                const pct = ((jam / 181) * 100).toFixed(2);
+                const status = jam >= 181 ? "Tuntas (181 Jam)" : "Belum Tuntas";
+                const fak = (m.fakultas && m.fakultas !== '-') ? m.fakultas : getStudentFakultas(m.username);
+                const clean = (txt) => `"${String(txt || '').replace(/"/g, '""')}"`;
+                csvContent += `${idx + 1},${clean(m.nip || m.nim || '-')},${clean(m.namaLengkap || m.username)},${clean(m.username)},${clean(m.kelompok || '-')},${clean(fak)},${jam},${pct}%,${clean(status)}\n`;
+            });
+
+            const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            const scopeTag = currentUser?.username ? `_${currentUser.username}` : '';
+            a.download = `Rekap_Akumulasi_Jam_KKN${scopeTag}_${new Date().toISOString().slice(0,10)}.csv`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // Fungsi Cetak PDF
+        function printRekapPDF() {
+            window.print();
+        }
+
+        // Fungsi Pengingat WhatsApp
+        function sendWhatsAppReminder(theme = 'ALL') {
+            let list = currentUnreportedMhs || [];
+            if (theme !== 'ALL') {
+                list = list.filter(m => (m.kelompok || '').toUpperCase().includes(theme));
+            }
+            if (list.length === 0) {
+                alert("Semua mahasiswa binaan Anda sudah mengirimkan laporan!");
+                return;
+            }
+            let msg = `*PEMBERITAHUAN MONITORING KKN*\n`;
+            msg += `Berikut daftar mahasiswa yang *belum mengirim laporan* (${theme}):\n\n`;
+            list.forEach((m, i) => {
+                const fak = (m.fakultas && m.fakultas !== '-') ? m.fakultas : getStudentFakultas(m.username);
+                msg += `${i + 1}. *${m.namaLengkap || m.username}* (@${m.username})\n   Kelompok: ${m.kelompok || '-'} | Fak: ${fak}\n`;
+            });
+            msg += `\nMohon segera melengkapi laporan harian melalui SIM KKN. Terima kasih.`;
+            const waUrl = `https://api.whatsapp.com/send?text=${encodeURIComponent(msg)}`;
+            window.open(waUrl, '_blank');
+        }
+
         function renderAdminMultiChart(data) {
             const ctx = document.getElementById('reportChart')?.getContext('2d'); if(!ctx) return;
             const counts = { p:{}, m:{}, d:{}, g:{}, r:{} }, dates = new Set();
