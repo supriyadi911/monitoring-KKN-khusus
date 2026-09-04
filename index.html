@@ -881,6 +881,11 @@
                             <input type="text" id="search-verif" onkeyup="applyAdminVerifFilters()" placeholder="Cari nama mahasiswa, kelompok, atau deskripsi..." class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none text-sm shadow-sm">
                         </div>
                         <div class="w-full sm:w-56">
+                            <select id="filter-kelompok-verif" onchange="applyAdminVerifFilters()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm text-gray-700">
+                                <option value="">Semua Kelompok</option>
+                            </select>
+                        </div>
+                        <div class="w-full sm:w-56">
                             <select id="filter-jenis-verif" onchange="applyAdminVerifFilters()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-blue-500 outline-none shadow-sm text-gray-700">
                                 <option value="">Semua Jenis Laporan</option>
                                 <option value="Giat Harian">Giat Harian</option>
@@ -939,6 +944,11 @@
                             <input type="text" id="search-belum-verif" onkeyup="applyAdminBelumVerifFilters()" placeholder="Cari nama mahasiswa, kelompok, atau deskripsi..." class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-500 outline-none text-sm shadow-sm">
                         </div>
                         <div class="w-full sm:w-56">
+                            <select id="filter-kelompok-belum-verif" onchange="applyAdminBelumVerifFilters()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-gray-500 outline-none shadow-sm text-gray-700">
+                                <option value="">Semua Kelompok</option>
+                            </select>
+                        </div>
+                        <div class="w-full sm:w-56">
                             <select id="filter-jenis-belum-verif" onchange="applyAdminBelumVerifFilters()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-gray-500 outline-none shadow-sm text-gray-700">
                                 <option value="">Semua Jenis Laporan</option>
                                 <option value="Giat Harian">Giat Harian</option>
@@ -995,6 +1005,11 @@
                                 <i class="fa-solid fa-search text-gray-400"></i>
                             </div>
                             <input type="text" id="search-tolak" onkeyup="applyAdminTolakFilters()" placeholder="Cari nama mahasiswa, kelompok, atau deskripsi..." class="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 outline-none text-sm shadow-sm">
+                        </div>
+                        <div class="w-full sm:w-56">
+                            <select id="filter-kelompok-tolak" onchange="applyAdminTolakFilters()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none shadow-sm text-gray-700">
+                                <option value="">Semua Kelompok</option>
+                            </select>
                         </div>
                         <div class="w-full sm:w-56">
                             <select id="filter-jenis-tolak" onchange="applyAdminTolakFilters()" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-red-500 outline-none shadow-sm text-gray-700">
@@ -1425,6 +1440,40 @@
             Verif: { col: 'tanggal', dir: 'desc' }, BelumVerif: { col: 'tanggal', dir: 'desc' }, Tolak: { col: 'tanggal', dir: 'desc' }
         };
 
+        // --- CACHE CEPAT & FLAG OPTIMASI PERFORMA ---
+        const accountsMap = new Map();
+        const studentFakultasCache = new Map();
+        const scopeCheckReportCache = new Map();
+        const scopeCheckStudentCache = new Map();
+        let activeReportsCache = null;
+        let activeAccountsCache = null;
+        let debounceStorageTimer = null;
+        let needsAdminRefreshOnModalClose = false;
+
+        function debouncedSaveReports() {
+            clearTimeout(debounceStorageTimer);
+            debounceStorageTimer = setTimeout(() => {
+                safeSaveToCache('kkn_reports', mahasiswaReportsData);
+            }, 500);
+        }
+
+        function invalidateScopeCaches() {
+            activeReportsCache = null;
+            activeAccountsCache = null;
+            scopeCheckReportCache.clear();
+            scopeCheckStudentCache.clear();
+        }
+
+        function rebuildAccountsIndex() {
+            accountsMap.clear();
+            studentFakultasCache.clear();
+            accountsData.forEach(a => {
+                const u = (a.username || '').toLowerCase().trim();
+                if (u) accountsMap.set(u, a);
+            });
+            invalidateScopeCaches();
+        }
+
         // =========================================================================
         // 4. INIT & CORE FUNCTIONS (CACHING SYSTEM)
         // =========================================================================
@@ -1454,9 +1503,14 @@
                     const cachedReports = localStorage.getItem('kkn_reports');
                     const cachedAccounts = localStorage.getItem('kkn_accounts');
                     if (cachedReports && cachedAccounts) {
-                        mahasiswaReportsData = JSON.parse(cachedReports);
-                        accountsData = JSON.parse(cachedAccounts);
-                        renderBasedOnRole();
+                        try {
+                            mahasiswaReportsData = JSON.parse(cachedReports);
+                            accountsData = JSON.parse(cachedAccounts);
+                            rebuildAccountsIndex();
+                            renderBasedOnRole();
+                        } catch (cacheErr) {
+                            console.warn("Gagal membaca cache lokal:", cacheErr);
+                        }
                     }
                 }
 
@@ -1467,11 +1521,25 @@
                     fetch(`${SCRIPT_URL}?action=getAccounts&_t=${_t}`, { cache: 'no-store' })
                 ]);
                 
-                const data1 = await res1.json();
-                const data2 = await res2.json();
+                // Ambil respons mentah sebagai teks untuk validasi sebelum diparsing
+                const text1 = await res1.text();
+                const text2 = await res2.text();
+
+                const isJson1 = text1.trim().startsWith('{') || text1.trim().startsWith('[');
+                const isJson2 = text2.trim().startsWith('{') || text2.trim().startsWith('[');
+
+                if (!isJson1 || !isJson2) {
+                    console.warn("Respon dari server bukan format JSON (kemungkinan Google Apps Script sedang sibuk atau dicegat jaringan). Menggunakan data cache yang tersedia.");
+                    setConnectionStatus('offline');
+                    return;
+                }
+
+                const data1 = JSON.parse(text1);
+                const data2 = JSON.parse(text2);
                 
                 mahasiswaReportsData = data1.reports || [];
                 accountsData = data2.accounts || []; 
+                rebuildAccountsIndex();
                 
                 // Simpan ke Cache dengan aman
                 safeSaveToCache('kkn_reports', mahasiswaReportsData);
@@ -1480,8 +1548,11 @@
                 renderBasedOnRole();
                 setConnectionStatus('online');
             } catch (error) {
-                console.error("Gagal memuat data dari GAS:", error);
+                console.warn("Gagal memuat data dari GAS:", error.message || error);
                 setConnectionStatus('offline');
+                if (mahasiswaReportsData.length > 0 || accountsData.length > 0) {
+                    try { renderBasedOnRole(); } catch(e) {}
+                }
             }
         }
 
@@ -1497,14 +1568,24 @@
             alert("Data berhasil disinkronkan dengan Spreadsheet!");
         }
 
-        // Helper Eksekusi Post ke GAS
+        // Helper Eksekusi Post ke GAS dengan proteksi teks HTML
         async function executeGASAction(action, payload) {
-            const res = await fetch(SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({ action: action, data: payload || {} }),
-                headers: { 'Content-Type': 'text/plain;charset=utf-8' }
-            });
-            return await res.json();
+            try {
+                const res = await fetch(SCRIPT_URL, {
+                    method: 'POST',
+                    body: JSON.stringify({ action: action, data: payload || {} }),
+                    headers: { 'Content-Type': 'text/plain;charset=utf-8' }
+                });
+                const text = await res.text();
+                if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
+                    return JSON.parse(text);
+                }
+                console.warn("Respon eksekusi bukan JSON:", text.substring(0, 100));
+                return { success: false, error: "Server mengembalikan respon tidak terduga." };
+            } catch (e) {
+                console.warn("executeGASAction error:", e);
+                return { success: false, error: e.message };
+            }
         }
 
         // =========================================================================
@@ -1532,7 +1613,6 @@
                     'PENDIDIKAN MATEMATIKA', 'MATEMATIKA', 'PMAT', 'PMA',
                     'PENDIDIKAN BAHASA ARAB', 'BAHASA ARAB', 'ARAB', 'PBA'
                 ],
-                // Secara ketat mengecualikan seluruh KKN Tematik Magang agar Biologi Magang tidak masuk ke Ver2ok
                 excludeKeywords: ['MAGANG', 'KKN MAGANG', 'TEMATIK MAGANG']
             },
             'ver3ok': {
@@ -1556,60 +1636,42 @@
             }
         };
 
-        // Algoritma Pencocokan Cerdas dengan Dukungan Pengecualian (Exclude Keywords)
-        function matchScopeKeywords(text, keywords, excludeKeywords = []) {
+        // Pra-kompilasi Regex untuk meningkatkan performa ribuan kali lipat
+        const PRECOMPILED_REGEX = {};
+        Object.keys(VERIFIKATOR_CONFIG).forEach(vKey => {
+            const conf = VERIFIKATOR_CONFIG[vKey];
+            PRECOMPILED_REGEX[vKey] = {
+                keywordsRegex: conf.keywords.filter(k => k.length <= 4).map(k => new RegExp(`(^|[^A-Z0-9])${k}([^A-Z0-9]|$)`, 'i')),
+                keywordsPlain: conf.keywords.filter(k => k.length > 4),
+                excludeRegex: conf.excludeKeywords.filter(k => k.length <= 4).map(k => new RegExp(`(^|[^A-Z0-9])${k}([^A-Z0-9]|$)`, 'i')),
+                excludePlain: conf.excludeKeywords.filter(k => k.length > 4)
+            };
+        });
+
+        // Algoritma Pencocokan Cerdas Teroptimasi
+        function matchScopeKeywordsFast(text, vKey) {
             if (!text) return false;
             const cleanText = String(text).toUpperCase();
+            const comp = PRECOMPILED_REGEX[vKey];
+            if (!comp) return false;
 
-            // 1. Evaluasi kata kunci pengecualian (exclude) terlebih dahulu
-            if (excludeKeywords && excludeKeywords.length > 0) {
-                const hasExcluded = excludeKeywords.some(ex => {
-                    const cleanEx = ex.toUpperCase();
-                    if (cleanEx.length <= 4) {
-                        const regex = new RegExp(`(^|[^A-Z0-9])${cleanEx}([^A-Z0-9]|$)`, 'i');
-                        return regex.test(cleanText);
-                    }
-                    return cleanText.includes(cleanEx);
-                });
-                if (hasExcluded) return false;
-            }
+            // 1. Evaluasi pengecualian
+            if (comp.excludePlain.some(ex => cleanText.includes(ex))) return false;
+            if (comp.excludeRegex.some(rx => rx.test(cleanText))) return false;
 
-            // 2. Evaluasi kata kunci cakupan (scope)
-            return keywords.some(kw => {
-                const cleanKw = kw.toUpperCase();
-                if (cleanKw.length <= 4) {
-                    const regex = new RegExp(`(^|[^A-Z0-9])${cleanKw}([^A-Z0-9]|$)`, 'i');
-                    return regex.test(cleanText);
-                }
-                return cleanText.includes(cleanKw);
-            });
+            // 2. Evaluasi kecocokan
+            if (comp.keywordsPlain.some(kw => cleanText.includes(kw))) return true;
+            return comp.keywordsRegex.some(rx => rx.test(cleanText));
         }
 
-        // Memeriksa apakah profil mahasiswa termasuk dalam cakupan verifikator
+        // Memeriksa apakah profil mahasiswa termasuk dalam cakupan verifikator (dengan Cache O(1))
         function isStudentInVerifikatorScope(student, verUser) {
             if (!verUser || verUser.role !== 'admin') return true;
             const usr = (verUser.username || '').toLowerCase().trim();
-            const config = VERIFIKATOR_CONFIG[usr];
-            if (!config) return true; // Super admin melihat semua mahasiswa
-            
-            // Periksa kata kunci pengecualian langsung pada kelompok & prodi
-            if (config.excludeKeywords && config.excludeKeywords.length > 0) {
-                const studentExcludeText = [
-                    student.kelompok || '',
-                    student.jurusan || '',
-                    student.prodi || '',
-                    student.fakultas || ''
-                ].join(' ').toUpperCase();
+            if (!VERIFIKATOR_CONFIG[usr]) return true;
 
-                const isExcluded = config.excludeKeywords.some(ex => {
-                    const cleanEx = ex.toUpperCase();
-                    if (cleanEx.length <= 4) {
-                        return new RegExp(`(^|[^A-Z0-9])${cleanEx}([^A-Z0-9]|$)`, 'i').test(studentExcludeText);
-                    }
-                    return studentExcludeText.includes(cleanEx);
-                });
-                if (isExcluded) return false;
-            }
+            const cacheKey = `${usr}_${student.username || ''}`;
+            if (scopeCheckStudentCache.has(cacheKey)) return scopeCheckStudentCache.get(cacheKey);
 
             const studentFields = [
                 student.fakultas || '',
@@ -1619,65 +1681,62 @@
                 student.namaLengkap || '',
                 student.username || ''
             ].join(' ');
-            return matchScopeKeywords(studentFields, config.keywords, config.excludeKeywords || []);
+
+            const isMatch = matchScopeKeywordsFast(studentFields, usr);
+            scopeCheckStudentCache.set(cacheKey, isMatch);
+            return isMatch;
         }
 
-        // Memeriksa apakah laporan kegiatan termasuk dalam cakupan verifikator
+        // Memeriksa apakah laporan kegiatan termasuk dalam cakupan verifikator (dengan Cache O(1))
         function isReportInVerifikatorScope(report, verUser) {
             if (!verUser || verUser.role !== 'admin') return true;
             const usr = (verUser.username || '').toLowerCase().trim();
-            const config = VERIFIKATOR_CONFIG[usr];
-            if (!config) return true; // Super admin melihat semua laporan
+            if (!VERIFIKATOR_CONFIG[usr]) return true;
 
-            // 1. Cek pengecualian langsung pada metadata laporan (kelompok / jenis)
-            if (config.excludeKeywords && config.excludeKeywords.length > 0) {
-                const reportExcludeCheck = [
-                    report.kelompok || '',
-                    report.fakultas || '',
-                    report.rencana ? report.rencana.split(' | ')[0] : ''
-                ].join(' ').toUpperCase();
+            const cacheKey = `${usr}_${report.id || ''}_${report.username || ''}`;
+            if (scopeCheckReportCache.has(cacheKey)) return scopeCheckReportCache.get(cacheKey);
 
-                const isExcluded = config.excludeKeywords.some(ex => {
-                    const cleanEx = ex.toUpperCase();
-                    if (cleanEx.length <= 4) {
-                        return new RegExp(`(^|[^A-Z0-9])${cleanEx}([^A-Z0-9]|$)`, 'i').test(reportExcludeCheck);
-                    }
-                    return reportExcludeCheck.includes(cleanEx);
-                });
-                if (isExcluded) return false;
-            }
+            const studentUsername = (report.username || '').toLowerCase().trim();
+            const student = accountsMap.get(studentUsername);
+            let isMatch = false;
 
-            // 2. Cek lewat akun mahasiswa terkait
-            const student = accountsData.find(a => (a.username || '').toLowerCase().trim() === (report.username || '').toLowerCase().trim());
             if (student) {
-                return isStudentInVerifikatorScope(student, verUser);
+                isMatch = isStudentInVerifikatorScope(student, verUser);
+            } else {
+                const reportFields = [
+                    report.fakultas || '',
+                    report.kelompok || '',
+                    report.rencana || '',
+                    report.namaLengkap || '',
+                    report.username || ''
+                ].join(' ');
+                isMatch = matchScopeKeywordsFast(reportFields, usr);
             }
 
-            // 3. Fallback jika data akun belum termuat di memori
-            const reportFields = [
-                report.fakultas || '',
-                report.kelompok || '',
-                report.rencana || '',
-                report.namaLengkap || '',
-                report.username || ''
-            ].join(' ');
-            return matchScopeKeywords(reportFields, config.keywords, config.excludeKeywords || []);
+            scopeCheckReportCache.set(cacheKey, isMatch);
+            return isMatch;
         }
 
-        // Mengambil daftar akun aktif sesuai wewenang verifikator
+        // Mengambil daftar akun aktif sesuai wewenang verifikator (Ter-memoize)
         function getActiveAccounts() {
             if (!currentUser || currentUser.role !== 'admin') return accountsData;
             const usr = (currentUser.username || '').toLowerCase().trim();
             if (!VERIFIKATOR_CONFIG[usr]) return accountsData;
-            return accountsData.filter(acc => acc.role === 'admin' || isStudentInVerifikatorScope(acc, currentUser));
+            if (activeAccountsCache) return activeAccountsCache;
+
+            activeAccountsCache = accountsData.filter(acc => acc.role === 'admin' || isStudentInVerifikatorScope(acc, currentUser));
+            return activeAccountsCache;
         }
 
-        // Mengambil daftar laporan aktif sesuai wewenang verifikator
+        // Mengambil daftar laporan aktif sesuai wewenang verifikator (Ter-memoize)
         function getActiveReports() {
             if (!currentUser || currentUser.role !== 'admin') return mahasiswaReportsData;
             const usr = (currentUser.username || '').toLowerCase().trim();
             if (!VERIFIKATOR_CONFIG[usr]) return mahasiswaReportsData;
-            return mahasiswaReportsData.filter(rep => isReportInVerifikatorScope(rep, currentUser));
+            if (activeReportsCache) return activeReportsCache;
+
+            activeReportsCache = mahasiswaReportsData.filter(rep => isReportInVerifikatorScope(rep, currentUser));
+            return activeReportsCache;
         }
 
         function renderBasedOnRole() {
@@ -1688,6 +1747,7 @@
             } else if (currentUser.role === 'admin') {
                 updateVerifikatorUIBanner();
                 updateScopeBadgesInTabs();
+                ['rekap', 'belum-verif', 'verif', 'tolak'].forEach(t => populateKelompokFilter(t));
                 renderAdminDashboard();
             } else if (currentUser.role === 'mahasiswa') {
                 updateMahasiswaUIProfile();
@@ -1695,11 +1755,16 @@
             }
         }
 
-        // Helper untuk mencari nama Fakultas mahasiswa berdasarkan data akun spreadsheet
+        // Helper O(1) untuk mencari nama Fakultas mahasiswa
         function getStudentFakultas(username) {
             if (!username) return '-';
-            const user = accountsData.find(a => (a.username || '').toLowerCase().trim() === String(username).toLowerCase().trim());
-            return (user && user.fakultas && user.fakultas.trim() !== '' && user.fakultas.trim() !== '-') ? user.fakultas.trim() : '-';
+            const cleanU = String(username).toLowerCase().trim();
+            if (studentFakultasCache.has(cleanU)) return studentFakultasCache.get(cleanU);
+
+            const user = accountsMap.get(cleanU);
+            const fak = (user && user.fakultas && user.fakultas.trim() !== '' && user.fakultas.trim() !== '-') ? user.fakultas.trim() : '-';
+            studentFakultasCache.set(cleanU, fak);
+            return fak;
         }
 
         // Tampilan Banner Jabatan dan Cakupan Verifikator di Dashboard
@@ -1876,7 +1941,8 @@
                 } else {
                     mahasiswaReportsData.push(payload);
                 }
-                safeSaveToCache('kkn_reports', mahasiswaReportsData);
+                invalidateScopeCaches();
+                debouncedSaveReports();
                 renderBasedOnRole();
                 alert(`Laporan berhasil ${id ? 'diperbarui' : 'dikirim'}!`);
                 resetMahasiswaForm();
@@ -1890,34 +1956,77 @@
             }
         }
 
-        async function toggleReportStatus(id, isDiakui) {
+        // Update Instan Dalam Modal (60 FPS Tanpa Membekukan Layar)
+        function updateModalTotalJam(username) {
+            const totalJamEl = document.getElementById('rincian-total-jam');
+            if (!totalJamEl) return;
+            const reports = mahasiswaReportsData.filter(r => r.username === username);
+            let totalJam = 0;
+            reports.forEach(r => {
+                const jam = Number(r.keluhan || 0);
+                const parts = (r.rencana || '').split(' | ');
+                const status = parts[2] || 'DIAKUI';
+                if (status !== 'TIDAK_DIAKUI') totalJam += jam;
+            });
+            totalJamEl.innerText = `${totalJam} Jam`;
+        }
+
+        async function toggleReportStatus(id, isDiakui, rowId) {
             const r = mahasiswaReportsData.find(x => String(x.id) === String(id));
             if (!r) return;
             const parts = (r.rencana || '').split(' | ');
             r.rencana = `${parts[0]} | ${parts[1] || ''} | ${isDiakui ? 'DIAKUI' : 'TIDAK_DIAKUI'} | ${parts[3] || 'UNVERIFIED'}`;
             
-            // Optimistic UI Update
-            safeSaveToCache('kkn_reports', mahasiswaReportsData);
-            openRincianModal(r.username);
-            renderBasedOnRole();
+            // Invalidate cache
+            invalidateScopeCaches();
+            needsAdminRefreshOnModalClose = true;
 
-            // Background Sync - Kirim SELURUH data (r) agar kolom lain di Spreadsheet tidak tertimpa menjadi kosong
-            executeGASAction('editMahasiswaReport', r).catch(e=>console.error(e));
+            // 1. UPDATE ELEMEN DOM BARIS SECARA INSTAN TANPA RE-RENDER TABEL
+            const statusLabel = document.getElementById(`status-label-${id}`);
+            const durasiCell = document.getElementById(`durasi-cell-${id}`);
+            if (statusLabel) {
+                statusLabel.innerText = isDiakui ? 'DIAKUI' : 'DITOLAK';
+                statusLabel.className = `ms-2 text-[10px] font-bold ${isDiakui ? 'text-emerald-600' : 'text-red-500'} w-14 text-left transition-colors duration-150`;
+            }
+            if (durasiCell) {
+                const jam = Number(r.keluhan || 0);
+                durasiCell.innerHTML = isDiakui 
+                    ? `<span class="font-bold text-emerald-600">${jam} Jam</span>` 
+                    : `<span class="font-bold text-red-500 line-through">${jam} Jam</span><br><span class="text-[10px] text-red-500">0 Jam</span>`;
+            }
+
+            // 2. Perbarui total jam di header modal
+            updateModalTotalJam(r.username);
+
+            // 3. Simpan ke local storage dengan debounce
+            debouncedSaveReports();
+
+            // 4. Background Sync ke GAS
+            executeGASAction('editMahasiswaReport', r).catch(e => console.error("GAS Sync error:", e));
         }
 
-        async function toggleReportVerification(id, isVerified) {
+        async function toggleReportVerification(id, isVerified, rowId) {
             const r = mahasiswaReportsData.find(x => String(x.id) === String(id));
             if (!r) return;
             const parts = (r.rencana || '').split(' | ');
             r.rencana = `${parts[0]} | ${parts[1] || ''} | ${parts[2] || 'DIAKUI'} | ${isVerified ? 'VERIFIED' : 'UNVERIFIED'}`;
             
-            // Optimistic UI Update
-            safeSaveToCache('kkn_reports', mahasiswaReportsData);
-            openRincianModal(r.username);
-            renderBasedOnRole();
+            // Invalidate cache
+            invalidateScopeCaches();
+            needsAdminRefreshOnModalClose = true;
 
-            // Background Sync - Kirim SELURUH data (r) agar kolom lain di Spreadsheet tidak tertimpa menjadi kosong
-            executeGASAction('editMahasiswaReport', r).catch(e=>console.error(e));
+            // 1. UPDATE ELEMEN DOM BARIS SECARA INSTAN
+            const verifLabel = document.getElementById(`verif-label-${id}`);
+            if (verifLabel) {
+                verifLabel.innerText = isVerified ? 'VERIFIED' : 'UNVERIF';
+                verifLabel.className = `ms-2 text-[10px] font-bold ${isVerified ? 'text-blue-600' : 'text-gray-500'} w-14 text-left transition-colors duration-150`;
+            }
+
+            // 2. Simpan ke local storage dengan debounce
+            debouncedSaveReports();
+
+            // 3. Background Sync ke GAS
+            executeGASAction('editMahasiswaReport', r).catch(e => console.error("GAS Sync error:", e));
         }
 
         async function toggleVerifikasiKKN(username, isVerified) {
@@ -1926,21 +2035,25 @@
                 const dummyReport = mahasiswaReportsData.find(r => r.username === username && r.rencana && r.rencana.includes('[VERIFIED_KKN]'));
                 if (dummyReport) {
                     mahasiswaReportsData = mahasiswaReportsData.filter(x => String(x.id) !== String(dummyReport.id));
-                    safeSaveToCache('kkn_reports', mahasiswaReportsData);
-                    openRincianModal(username); renderBasedOnRole();
+                    invalidateScopeCaches();
+                    debouncedSaveReports();
+                    openRincianModal(username); 
+                    renderBasedOnRole();
                     executeGASAction('deleteMahasiswaReport', { id: dummyReport.id });
                 }
             } else {
                 if (!confirm(`Verifikasi bahwa mahasiswa @${username} telah sah menyelesaikan program KKN?`)) return;
-                const user = accountsData.find(u => u.username === username);
+                const user = accountsMap.get(username.toLowerCase().trim()) || accountsData.find(u => u.username === username);
                 const payload = {
-                    id: Date.now().toString(), username: username, kelompok: user.kelompok,
+                    id: Date.now().toString(), username: username, kelompok: user ? user.kelompok : '-',
                     tanggal: new Date().toISOString().split('T')[0], rencana: 'Verifikasi Sistem | [VERIFIED_KKN] | DIAKUI',
                     keluhan: 0, foto: '-', timestamp: new Date().toLocaleString('id-ID') + ' WIB'
                 };
                 mahasiswaReportsData.push(payload);
-                safeSaveToCache('kkn_reports', mahasiswaReportsData);
-                openRincianModal(username); renderBasedOnRole();
+                invalidateScopeCaches();
+                debouncedSaveReports();
+                openRincianModal(username); 
+                renderBasedOnRole();
                 executeGASAction('addMahasiswaReport', payload);
             }
         }
@@ -1952,7 +2065,8 @@
 
             try {
                 mahasiswaReportsData = mahasiswaReportsData.filter(x => String(x.id) !== String(id));
-                safeSaveToCache('kkn_reports', mahasiswaReportsData);
+                invalidateScopeCaches();
+                debouncedSaveReports();
                 renderBasedOnRole();
                 await executeGASAction('deleteMahasiswaReport', { id: id });
             } catch(e) { console.error(e); }
@@ -2179,10 +2293,10 @@
                 const titleEl = document.getElementById('admin-mhs-page-title'); if (titleEl) titleEl.innerText = titles[theme] || 'Manajemen Laporan Mahasiswa';
                 applyAdminMhsFilters();
             }
-            if (tabId === 'rekap-jam') { populateRekapKelompokFilter(); applyAdminRekapFilter(); }
-            if (tabId === 'belum-verif') applyAdminBelumVerifFilters();
-            if (tabId === 'verifikasi') applyAdminVerifFilters();
-            if (tabId === 'ditolak') applyAdminTolakFilters();
+            if (tabId === 'rekap-jam') { populateKelompokFilter('rekap'); applyAdminRekapFilter(); }
+            if (tabId === 'belum-verif') { populateKelompokFilter('belum-verif'); applyAdminBelumVerifFilters(); }
+            if (tabId === 'verifikasi') { populateKelompokFilter('verif'); applyAdminVerifFilters(); }
+            if (tabId === 'ditolak') { populateKelompokFilter('tolak'); applyAdminTolakFilters(); }
             if (tabId === 'akun') applyAdminAkunFilters();
             if (window.innerWidth < 768) {
                 const sidebar = document.getElementById('admin-sidebar'), overlay = document.getElementById('sidebar-overlay');
@@ -2298,32 +2412,80 @@
             if (modal) modal.classList.remove('hidden');
         }
         function closeAccountModal() { const m = document.getElementById('account-modal'); if (m) m.classList.add('hidden'); }
-        function closeRincianModal() { const m = document.getElementById('rincian-modal'); if (m) m.classList.add('hidden'); }
+        
+        function closeRincianModal() { 
+            const m = document.getElementById('rincian-modal'); 
+            if (m) m.classList.add('hidden'); 
+            // Re-render tabel latar belakang dan rekap hanya ketika verifikator telah selesai di modal
+            if (needsAdminRefreshOnModalClose) {
+                needsAdminRefreshOnModalClose = false;
+                renderBasedOnRole();
+            }
+        }
+
         function resetMahasiswaForm() { const f = document.getElementById('mhs-report-form'); if(f) f.reset(); document.getElementById('mhs-report-id').value = ''; document.getElementById('mhs-form-title').innerText = "Buat Laporan Harian"; }
         
         function openRincianModal(username) {
             const modal = document.getElementById('rincian-modal'), tbody = document.getElementById('rincian-table-body'), namaEl = document.getElementById('rincian-nama'), totalJamEl = document.getElementById('rincian-total-jam');
             if (!modal || !tbody) return;
-            const user = accountsData.find(u => u.username === username);
+            const cleanU = String(username).toLowerCase().trim();
+            const user = accountsMap.get(cleanU) || accountsData.find(u => (u.username || '').toLowerCase().trim() === cleanU);
             if (user && namaEl) namaEl.innerHTML = `${user.namaLengkap || user.username} <span class="text-xs text-gray-500">(@${user.username})</span>`;
-            const reports = mahasiswaReportsData.filter(r => r.username === username).sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
-            tbody.innerHTML = ''; let totalJam = 0;
-            if (reports.length === 0) tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Belum ada laporan kegiatan.</td></tr>';
-            else {
+            
+            const reports = mahasiswaReportsData.filter(r => (r.username || '').toLowerCase().trim() === cleanU).sort((a,b) => new Date(b.tanggal) - new Date(a.tanggal));
+            tbody.innerHTML = ''; 
+            let totalJam = 0;
+
+            if (reports.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Belum ada laporan kegiatan.</td></tr>';
+            } else {
+                const fragment = document.createDocumentFragment();
                 reports.forEach(r => {
-                    const jam = Number(r.keluhan || 0), parts = (r.rencana || '').split(' | '), jenis = parts[0], deskripsi = parts[1] || '-', status = parts[2] || 'DIAKUI', isVerif = parts[3] === 'VERIFIED', isDiakui = status !== 'TIDAK_DIAKUI';
+                    const jam = Number(r.keluhan || 0);
+                    const parts = (r.rencana || '').split(' | ');
+                    const jenis = parts[0];
+                    const deskripsi = parts[1] || '-';
+                    const status = parts[2] || 'DIAKUI';
+                    const isVerif = parts[3] === 'VERIFIED';
+                    const isDiakui = status !== 'TIDAK_DIAKUI';
                     if (isDiakui) totalJam += jam;
-                    const jamHtml = isDiakui ? `<span class="font-bold text-emerald-600">${jam} Jam</span>` : `<span class="font-bold text-red-500 line-through">${jam} Jam</span><br><span class="text-[10px] text-red-500">0 Jam</span>`;
+
+                    const jamHtml = isDiakui 
+                        ? `<span class="font-bold text-emerald-600">${jam} Jam</span>` 
+                        : `<span class="font-bold text-red-500 line-through">${jam} Jam</span><br><span class="text-[10px] text-red-500">0 Jam</span>`;
+                    
                     const tr = document.createElement('tr');
-                    tr.innerHTML = `<td class="px-4 py-3 whitespace-nowrap text-gray-600">${r.tanggal}</td><td class="px-4 py-3 font-medium">${jenis}</td><td class="px-4 py-3 whitespace-normal min-w-[200px] text-xs">${deskripsi}</td><td class="px-4 py-3 text-center">${jamHtml}</td><td class="px-4 py-3 text-center bg-emerald-50 bg-opacity-30 border-l border-r border-emerald-100">
-                        <div class="flex flex-col items-start space-y-2 py-1">
-                            <label class="inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer" ${isDiakui?'checked':''} onchange="toggleReportStatus('${r.id}', this.checked)"><div class="relative w-9 h-5 bg-red-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div><span class="ms-2 text-[10px] font-bold ${isDiakui?'text-emerald-600':'text-red-500'} w-14 text-left">${isDiakui?'DIAKUI':'DITOLAK'}</span></label>
-                            <label class="inline-flex items-center cursor-pointer"><input type="checkbox" class="sr-only peer" ${isVerif?'checked':''} onchange="toggleReportVerification('${r.id}', this.checked)"><div class="relative w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div><span class="ms-2 text-[10px] font-bold ${isVerif?'text-blue-600':'text-gray-500'} w-14 text-left">${isVerif?'VERIFIED':'UNVERIF'}</span></label>
-                        </div></td><td class="px-4 py-3 text-center"><a href="${r.foto}" target="_blank" class="text-purple-500 bg-purple-50 p-2 rounded-full inline-block"><i class="fa-solid fa-image"></i></a></td>`;
-                    tbody.appendChild(tr);
+                    tr.id = `modal-row-${r.id}`;
+                    tr.innerHTML = `
+                        <td class="px-4 py-3 whitespace-nowrap text-gray-600">${r.tanggal}</td>
+                        <td class="px-4 py-3 font-medium">${jenis}</td>
+                        <td class="px-4 py-3 whitespace-normal min-w-[200px] text-xs text-gray-700">${deskripsi}</td>
+                        <td class="px-4 py-3 text-center" id="durasi-cell-${r.id}">${jamHtml}</td>
+                        <td class="px-4 py-3 text-center bg-emerald-50 bg-opacity-30 border-l border-r border-emerald-100">
+                            <div class="flex flex-col items-start space-y-2 py-1">
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" ${isDiakui ? 'checked' : ''} onchange="toggleReportStatus('${r.id}', this.checked, 'modal-row-${r.id}')">
+                                    <div class="relative w-9 h-5 bg-red-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-emerald-500"></div>
+                                    <span id="status-label-${r.id}" class="ms-2 text-[10px] font-bold ${isDiakui ? 'text-emerald-600' : 'text-red-500'} w-14 text-left transition-colors duration-150">${isDiakui ? 'DIAKUI' : 'DITOLAK'}</span>
+                                </label>
+                                <label class="inline-flex items-center cursor-pointer">
+                                    <input type="checkbox" class="sr-only peer" ${isVerif ? 'checked' : ''} onchange="toggleReportVerification('${r.id}', this.checked, 'modal-row-${r.id}')">
+                                    <div class="relative w-9 h-5 bg-gray-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-500"></div>
+                                    <span id="verif-label-${r.id}" class="ms-2 text-[10px] font-bold ${isVerif ? 'text-blue-600' : 'text-gray-500'} w-14 text-left transition-colors duration-150">${isVerif ? 'VERIFIED' : 'UNVERIF'}</span>
+                                </label>
+                            </div>
+                        </td>
+                        <td class="px-4 py-3 text-center">
+                            <a href="${r.foto}" target="_blank" class="text-purple-500 bg-purple-50 hover:bg-purple-100 p-2 rounded-full inline-block transition">
+                                <i class="fa-solid fa-image"></i>
+                            </a>
+                        </td>`;
+                    fragment.appendChild(tr);
                 });
+                tbody.appendChild(fragment);
             }
-            if (totalJamEl) totalJamEl.innerText = `${totalJam} Jam`; modal.classList.remove('hidden');
+            if (totalJamEl) totalJamEl.innerText = `${totalJam} Jam`; 
+            modal.classList.remove('hidden');
         }
 
         // =========================================================================
@@ -2440,16 +2602,48 @@
             if(selectAll) selectAll.checked = checked.length === document.querySelectorAll('.row-checkbox-admin-mhs').length && checked.length > 0;
         }
 
+        function populateKelompokFilter(tab) {
+            const selId = tab === 'rekap' ? 'filter-kelompok-rekap' : 
+                          tab === 'belum-verif' ? 'filter-kelompok-belum-verif' : 
+                          tab === 'verif' ? 'filter-kelompok-verif' : 
+                          tab === 'tolak' ? 'filter-kelompok-tolak' : `filter-kelompok-${tab}`;
+            const sel = document.getElementById(selId);
+            if (!sel) return;
+            const cur = sel.value;
+            const klps = [...new Set(getActiveAccounts().filter(a => a.role === 'mahasiswa').map(a => a.kelompok).filter(k => k && k !== '-'))].sort();
+            sel.innerHTML = '<option value="">Semua Kelompok</option>'; 
+            klps.forEach(k => { 
+                const o = document.createElement('option'); 
+                o.value = k; 
+                o.innerText = k; 
+                sel.appendChild(o); 
+            });
+            sel.value = klps.includes(cur) ? cur : '';
+        }
+
+        // Backward compatibility functions to prevent ReferenceError
+        function populateFakultasAndKelompokDropdowns(tab) {
+            populateKelompokFilter(tab);
+        }
+        function populateRekapKelompokFilter() {
+            populateKelompokFilter('rekap');
+        }
+        function onFakultasFilterChange(tab) {
+            populateKelompokFilter(tab);
+        }
+
         // Verif Filters
         function applyAdminBelumVerifFilters() {
             const dateKegiatan = document.querySelector('.global-date-input')?.value || '';
             const dateKirim = document.querySelector('.global-timestamp-input')?.value || '';
             const search = document.getElementById('search-belum-verif')?.value.toLowerCase()||'';
             const jenis = document.getElementById('filter-jenis-belum-verif')?.value||'';
+            const klp = document.getElementById('filter-kelompok-belum-verif')?.value||'';
 
             filteredDataBelumVerif = getActiveReports().filter(r => (r.rencana||'').split(' | ')[3] !== 'VERIFIED');
             if(dateKegiatan) filteredDataBelumVerif = filteredDataBelumVerif.filter(r => r.tanggal === dateKegiatan);
             if(dateKirim) filteredDataBelumVerif = filteredDataBelumVerif.filter(r => extractDateFromTimestamp(r.timestamp || r.Timestamp || r.waktu || r.Waktu) === dateKirim);
+            if(klp) filteredDataBelumVerif = filteredDataBelumVerif.filter(r => r.kelompok === klp);
             if(search) filteredDataBelumVerif = filteredDataBelumVerif.filter(r => (r.namaLengkap||r.username||'').toLowerCase().includes(search) || (r.kelompok||'').toLowerCase().includes(search));
             if(jenis) filteredDataBelumVerif = filteredDataBelumVerif.filter(r => (r.rencana||'').split(' | ')[0] === jenis);
             currentPageBelumVerif = 1; renderAdminTableBelumVerif(filteredDataBelumVerif);
@@ -2470,15 +2664,18 @@
             });
             renderPagination('pagination-belum-verif', totalPages, currentPageBelumVerif, 'BelumVerif');
         }
+
         function applyAdminVerifFilters() {
             const dateKegiatan = document.querySelector('.global-date-input')?.value || '';
             const dateKirim = document.querySelector('.global-timestamp-input')?.value || '';
             const search = document.getElementById('search-verif')?.value.toLowerCase()||'';
             const jenis = document.getElementById('filter-jenis-verif')?.value||'';
+            const klp = document.getElementById('filter-kelompok-verif')?.value||'';
 
             filteredDataVerif = getActiveReports().filter(r => (r.rencana||'').split(' | ')[3] === 'VERIFIED');
             if(dateKegiatan) filteredDataVerif = filteredDataVerif.filter(r => r.tanggal === dateKegiatan);
             if(dateKirim) filteredDataVerif = filteredDataVerif.filter(r => extractDateFromTimestamp(r.timestamp || r.Timestamp || r.waktu || r.Waktu) === dateKirim);
+            if(klp) filteredDataVerif = filteredDataVerif.filter(r => r.kelompok === klp);
             if(search) filteredDataVerif = filteredDataVerif.filter(r => (r.namaLengkap||r.username||'').toLowerCase().includes(search) || (r.kelompok||'').toLowerCase().includes(search));
             if(jenis) filteredDataVerif = filteredDataVerif.filter(r => (r.rencana||'').split(' | ')[0] === jenis);
             currentPageVerif = 1; renderAdminTableVerif(filteredDataVerif);
@@ -2499,15 +2696,18 @@
             });
             renderPagination('pagination-verif', totalPages, currentPageVerif, 'Verif');
         }
+
         function applyAdminTolakFilters() {
             const dateKegiatan = document.querySelector('.global-date-input')?.value || '';
             const dateKirim = document.querySelector('.global-timestamp-input')?.value || '';
             const search = document.getElementById('search-tolak')?.value.toLowerCase()||'';
             const jenis = document.getElementById('filter-jenis-tolak')?.value||'';
+            const klp = document.getElementById('filter-kelompok-tolak')?.value||'';
 
             filteredDataTolak = getActiveReports().filter(r => (r.rencana||'').split(' | ')[2] === 'TIDAK_DIAKUI');
             if(dateKegiatan) filteredDataTolak = filteredDataTolak.filter(r => r.tanggal === dateKegiatan);
             if(dateKirim) filteredDataTolak = filteredDataTolak.filter(r => extractDateFromTimestamp(r.timestamp || r.Timestamp || r.waktu || r.Waktu) === dateKirim);
+            if(klp) filteredDataTolak = filteredDataTolak.filter(r => r.kelompok === klp);
             if(search) filteredDataTolak = filteredDataTolak.filter(r => (r.namaLengkap||r.username||'').toLowerCase().includes(search) || (r.kelompok||'').toLowerCase().includes(search));
             if(jenis) filteredDataTolak = filteredDataTolak.filter(r => (r.rencana||'').split(' | ')[0] === jenis);
             currentPageTolak = 1; renderAdminTableTolak(filteredDataTolak);
@@ -2529,47 +2729,100 @@
             renderPagination('pagination-tolak', totalPages, currentPageTolak, 'Tolak');
         }
 
-        // Stats & Charts Update
-        function updateAdminGlobalStats() {
-            const dateKegiatan = document.querySelector('.global-date-input')?.value||'';
-            const dateKirim = document.querySelector('.global-timestamp-input')?.value||'';
-            
-            let globalMhs = getActiveReports();
-            if(dateKegiatan) globalMhs = globalMhs.filter(r => r.tanggal === dateKegiatan);
-            if(dateKirim) globalMhs = globalMhs.filter(r => extractDateFromTimestamp(r.timestamp || r.Timestamp || r.waktu || r.Waktu) === dateKirim);
-
-            const allMhs = getActiveAccounts().filter(a => a.role === 'mahasiswa');
-            const valTotalMhs = allMhs.length;
-            if(document.getElementById('stat-mhs')) document.getElementById('stat-mhs').innerText = valTotalMhs;
-            
-            const repMhsSet = new Set(globalMhs.map(r => r.username));
-            const repMhs = allMhs.filter(m => repMhsSet.has(m.username));
-            const unrepMhs = allMhs.filter(m => !repMhsSet.has(m.username));
-            
-            if(document.getElementById('count-rep-mhs')) document.getElementById('count-rep-mhs').innerText = repMhs.length;
-            if(document.getElementById('pct-mhs')) document.getElementById('pct-mhs').innerText = valTotalMhs ? ((repMhs.length/valTotalMhs)*100).toFixed(1).replace('.',',')+'%' : '0%';
-            if(document.getElementById('stat-rep-mhs')) document.getElementById('stat-rep-mhs').innerText = globalMhs.length;
-            
-            const isTheme = (m, th) => (m.kelompok||'').toUpperCase().includes(th);
-            ['ponpes','mengajar','dakwah','magang'].forEach(th => {
-                const a = allMhs.filter(m => isTheme(m, th.toUpperCase())), r = repMhs.filter(m => isTheme(m, th.toUpperCase()));
-                if(document.getElementById(`stat-${th}`)) document.getElementById(`stat-${th}`).innerText = a.length;
-                if(document.getElementById(`count-rep-${th}`)) document.getElementById(`count-rep-${th}`).innerText = `${r.length} Lapor`;
-                if(document.getElementById(`pct-${th}`)) document.getElementById(`pct-${th}`).innerText = a.length ? ((r.length/a.length)*100).toFixed(1)+'%' : '0%';
-            });
-
-            let cVer=0, cUnv=0, cDit=0, cTer=0;
-            globalMhs.forEach(r => { const p=(r.rencana||'').split(' | '); if(p[3]==='VERIFIED') cVer++; else cUnv++; if(p[2]==='TIDAK_DIAKUI') cDit++; else cTer++; });
-            const setStat = (id, val) => { if(document.getElementById(`stat-${id}`)) document.getElementById(`stat-${id}`).innerText=val; if(document.getElementById(`pct-${id}`)) document.getElementById(`pct-${id}`).innerText=globalMhs.length?((val/globalMhs.length)*100).toFixed(1)+'%':'0%'; };
-            setStat('verified', cVer); setStat('unverified', cUnv); setStat('diterima', cTer); setStat('ditolak', cDit);
-
-            currentUnreportedMhs = unrepMhs;
-            renderAdminMultiChart(globalMhs);
-            renderUnreportedLists(unrepMhs);
+        function resetFilters() { 
+            document.querySelectorAll('.global-date-input').forEach(el => el.value = ''); 
+            document.querySelectorAll('.global-timestamp-input').forEach(el => el.value = ''); 
+            ['search-mhs','filter-jenis-mhs','search-rekap','filter-kelompok-rekap','search-belum-verif','filter-kelompok-belum-verif','filter-jenis-belum-verif','search-verif','filter-kelompok-verif','filter-jenis-verif','search-tolak','filter-kelompok-tolak','filter-jenis-tolak','search-akun','filter-role-akun'].forEach(id => { const el = document.getElementById(id); if(el) el.value=''; }); 
+            ['rekap', 'belum-verif', 'verif', 'tolak'].forEach(t => populateKelompokFilter(t));
+            applyFilters(); applyAdminAkunFilters(); 
         }
 
-        // Render daftar mahasiswa yang belum melapor sesuai filter cakupan
-        function renderUnreportedLists(unrepList) {
+        function updateAdminGlobalStats() {
+            const dateKegiatan = document.querySelector('.global-date-input')?.value || '';
+            const dateKirim = document.querySelector('.global-timestamp-input')?.value || '';
+
+            let fMhs = getActiveReports();
+            if (dateKegiatan) fMhs = fMhs.filter(r => r.tanggal === dateKegiatan);
+            if (dateKirim) fMhs = fMhs.filter(r => extractDateFromTimestamp(r.timestamp || r.Timestamp || r.waktu || r.Waktu) === dateKirim);
+
+            const allMhs = getActiveAccounts().filter(a => a.role === 'mahasiswa');
+
+            // Set Mahasiswa Unik yang sudah lapor
+            const repMhsSet = new Set(fMhs.map(r => (r.username || '').toLowerCase().trim()));
+            const repMhs = allMhs.filter(m => repMhsSet.has((m.username || '').toLowerCase().trim()));
+
+            // 1. Statistik Kartu Utama
+            const statMhsEl = document.getElementById('stat-mhs');
+            const countRepMhsEl = document.getElementById('count-rep-mhs');
+            const pctMhsEl = document.getElementById('pct-mhs');
+            const statRepMhsEl = document.getElementById('stat-rep-mhs');
+
+            if (statMhsEl) statMhsEl.innerText = allMhs.length;
+            if (countRepMhsEl) countRepMhsEl.innerText = repMhs.length;
+            if (pctMhsEl) {
+                pctMhsEl.innerText = allMhs.length ? ((repMhs.length / allMhs.length) * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+            }
+            if (statRepMhsEl) statRepMhsEl.innerText = fMhs.length;
+
+            // 2. Statistik Kartu Tematik (Ponpes, Mengajar, Dakwah, Magang)
+            const isTheme = (m, th) => (m.kelompok || '').toUpperCase().includes(th);
+            ['ponpes', 'mengajar', 'dakwah', 'magang'].forEach(th => {
+                const a = allMhs.filter(m => isTheme(m, th.toUpperCase()));
+                const r = repMhs.filter(m => isTheme(m, th.toUpperCase()));
+
+                const statEl = document.getElementById(`stat-${th}`);
+                const countEl = document.getElementById(`count-rep-${th}`);
+                const pctEl = document.getElementById(`pct-${th}`);
+
+                if (statEl) statEl.innerText = a.length;
+                if (countEl) countEl.innerText = `${r.length} Lapor`;
+                if (pctEl) pctEl.innerText = a.length ? ((r.length / a.length) * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+            });
+
+            // 3. Statistik Status Laporan (Verified, Unverified, Diterima, Ditolak)
+            const totalDocs = fMhs.length;
+            let verifiedCount = 0;
+            let unverifiedCount = 0;
+            let diterimaCount = 0;
+            let ditolakCount = 0;
+
+            fMhs.forEach(r => {
+                const parts = (r.rencana || '').split(' | ');
+                const isDiakui = parts[2] !== 'TIDAK_DIAKUI';
+                const isVerif = parts[3] === 'VERIFIED';
+
+                if (isVerif) verifiedCount++;
+                else unverifiedCount++;
+
+                if (isDiakui) diterimaCount++;
+                else ditolakCount++;
+            });
+
+            const statVerifEl = document.getElementById('stat-verified');
+            const pctVerifEl = document.getElementById('pct-verified');
+            const statUnverifEl = document.getElementById('stat-unverified');
+            const pctUnverifEl = document.getElementById('pct-unverified');
+            const statDiterimaEl = document.getElementById('stat-diterima');
+            const pctDiterimaEl = document.getElementById('pct-diterima');
+            const statDitolakEl = document.getElementById('stat-ditolak');
+            const pctDitolakEl = document.getElementById('pct-ditolak');
+
+            if (statVerifEl) statVerifEl.innerText = verifiedCount;
+            if (pctVerifEl) pctVerifEl.innerText = totalDocs ? ((verifiedCount / totalDocs) * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+
+            if (statUnverifEl) statUnverifEl.innerText = unverifiedCount;
+            if (pctUnverifEl) pctUnverifEl.innerText = totalDocs ? ((unverifiedCount / totalDocs) * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+
+            if (statDiterimaEl) statDiterimaEl.innerText = diterimaCount;
+            if (pctDiterimaEl) pctDiterimaEl.innerText = totalDocs ? ((diterimaCount / totalDocs) * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+
+            if (statDitolakEl) statDitolakEl.innerText = ditolakCount;
+            if (pctDitolakEl) pctDitolakEl.innerText = totalDocs ? ((ditolakCount / totalDocs) * 100).toFixed(1).replace('.', ',') + '%' : '0%';
+
+            // 4. Mahasiswa Belum Lapor
+            const unrepList = allMhs.filter(m => !repMhsSet.has((m.username || '').toLowerCase().trim()));
+            currentUnreportedMhs = unrepList;
+
             const badgeTotal = document.getElementById('badge-unreported-mhs-total');
             if (badgeTotal) badgeTotal.innerText = `Total: ${unrepList.length}`;
 
@@ -2594,6 +2847,9 @@
                         }).join('');
                 }
             });
+
+            // 5. Render Grafik Admin
+            renderAdminMultiChart(fMhs);
         }
 
         function resetPublicFilters() {
