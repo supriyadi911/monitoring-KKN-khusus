@@ -2162,23 +2162,60 @@
 
         async function handleLogin(e) {
             e.preventDefault();
-            const u = document.getElementById('username').value, p = document.getElementById('password').value, r = document.getElementById('role').value;
+            const u = document.getElementById('username').value.trim();
+            const p = document.getElementById('password').value.trim();
+            const r = document.getElementById('role').value;
             const btn = document.getElementById('btn-login'), errorDiv = document.getElementById('login-error');
-            btn.innerHTML = '<div class="spinner mx-auto" style="width: 20px; height: 20px; border-width: 2px;"></div>'; btn.disabled = true;
+            
+            btn.innerHTML = '<div class="spinner mx-auto" style="width: 20px; height: 20px; border-width: 2px;"></div>'; 
+            btn.disabled = true;
             if (errorDiv) errorDiv.classList.add('hidden');
 
             try {
-                const res = await fetch(`${SCRIPT_URL}?action=login&username=${u}&password=${p}&_t=${Date.now()}`);
-                const data = await res.json();
-                if(data.success && data.user.role.toLowerCase().trim() === r.toLowerCase().trim()) {
-                    currentUser = data.user;
-                    currentUser.role = currentUser.role.toLowerCase().trim();
-                    localStorage.setItem('kkn_session', JSON.stringify(currentUser));
-                    routeUser();
-                } else {
-                    if (errorDiv) errorDiv.classList.remove('hidden');
+                // 1. PENDEKATAN CEPAT: Verifikasi LOKAL (Login Instan 0 detik)
+                // Karena data akun sudah terunduh di awal, kita cek langsung tanpa menunggu server
+                if (accountsData && accountsData.length > 0) {
+                    const localUser = accountsData.find(x => String(x.username).toLowerCase() === u.toLowerCase() && String(x.password) === p);
+                    
+                    if (localUser) {
+                        if (localUser.role.toLowerCase() === r.toLowerCase()) {
+                            currentUser = localUser;
+                            currentUser.role = currentUser.role.toLowerCase().trim();
+                            localStorage.setItem('kkn_session', JSON.stringify(currentUser));
+                            routeUser();
+                            btn.innerHTML = 'Masuk'; btn.disabled = false;
+                            return; // Login berhasil, langsung berhenti di sini
+                        } else {
+                            if (errorDiv) { errorDiv.innerText = "Peran (Role) tidak sesuai dengan akun Anda!"; errorDiv.classList.remove('hidden'); }
+                            btn.innerHTML = 'Masuk'; btn.disabled = false;
+                            return;
+                        }
+                    }
                 }
-            } catch (err) { alert("Gagal terhubung ke server."); } 
+
+                // 2. Fallback ke Server (Jika akun baru didaftarkan dan belum masuk memori lokal)
+                const res = await fetch(`${SCRIPT_URL}?action=login&username=${encodeURIComponent(u)}&password=${encodeURIComponent(p)}&_t=${Date.now()}`);
+                const text = await res.text();
+                
+                let data = { success: false };
+                if (text.trim().startsWith('{')) data = JSON.parse(text);
+
+                if (data.success && data.user) {
+                    if (data.user.role.toLowerCase().trim() === r.toLowerCase().trim()) {
+                        currentUser = data.user;
+                        currentUser.role = currentUser.role.toLowerCase().trim();
+                        localStorage.setItem('kkn_session', JSON.stringify(currentUser));
+                        routeUser();
+                    } else {
+                        if (errorDiv) { errorDiv.innerText = "Peran (Role) salah!"; errorDiv.classList.remove('hidden'); }
+                    }
+                } else {
+                    if (errorDiv) { errorDiv.innerText = data.error || "Username atau Password salah!"; errorDiv.classList.remove('hidden'); }
+                }
+            } catch (err) { 
+                console.error("Login Error:", err);
+                if (errorDiv) { errorDiv.innerText = "Gagal memverifikasi akun. Periksa Username/Password Anda."; errorDiv.classList.remove('hidden'); }
+            } 
             finally { btn.innerHTML = 'Masuk'; btn.disabled = false; }
         }
 
