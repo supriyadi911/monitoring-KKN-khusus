@@ -1930,6 +1930,7 @@
                 kelompok: currentUser.kelompok,
                 tanggal: document.getElementById('mhs-tanggal').value,
                 rencana: `${jenis} | ${deskripsi} | DIAKUI | UNVERIFIED`,
+                jam: document.getElementById('mhs-jam').value,
                 keluhan: document.getElementById('mhs-jam').value,
                 foto: document.getElementById('mhs-foto').value,
                 timestamp: new Date().toLocaleString('id-ID', { dateStyle: 'short', timeStyle: 'short' }) + ' WIB'
@@ -1965,7 +1966,7 @@
             const reports = mahasiswaReportsData.filter(r => r.username === username);
             let totalJam = 0;
             reports.forEach(r => {
-                const jam = Number(r.keluhan || 0);
+                const jam = Number(r.jam || r.keluhan || 0);
                 const parts = (r.rencana || '').split(' | ');
                 const status = parts[2] || 'DIAKUI';
                 if (status !== 'TIDAK_DIAKUI') totalJam += jam;
@@ -1991,7 +1992,7 @@
                 statusLabel.className = `ms-2 text-[10px] font-bold ${isDiakui ? 'text-emerald-600' : 'text-red-500'} w-14 text-left transition-colors duration-150`;
             }
             if (durasiCell) {
-                const jam = Number(r.keluhan || 0);
+                const jam = Number(r.jam || r.keluhan || 0);
                 durasiCell.innerHTML = isDiakui 
                     ? `<span class="font-bold text-emerald-600">${jam} Jam</span>` 
                     : `<span class="font-bold text-red-500 line-through">${jam} Jam</span><br><span class="text-[10px] text-red-500">0 Jam</span>`;
@@ -2480,7 +2481,7 @@
             } else {
                 const fragment = document.createDocumentFragment();
                 reports.forEach(r => {
-                    const jam = Number(r.keluhan || 0);
+                    const jam = Number(r.jam || r.keluhan || 0);
                     const parts = (r.rencana || '').split(' | ');
                     const jenis = parts[0];
                     const deskripsi = parts[1] || '-';
@@ -2565,7 +2566,7 @@
             tbody.innerHTML = ''; let totalJam = 0;
             if(reports.length === 0) { tbody.innerHTML = '<tr><td colspan="6" class="px-4 py-4 text-center text-gray-500">Belum ada laporan</td></tr>'; return; }
             reports.forEach(r => {
-                const jam = Number(r.keluhan || 0), parts = (r.rencana||'').split(' | '), jenis=parts[0], deskripsi=parts[1]||'-', status=parts[2]||'DIAKUI', isVerif=parts[3]==='VERIFIED', isDiakui=status!=='TIDAK_DIAKUI';
+                const jam = Number(r.jam || r.keluhan || 0), parts = (r.rencana||'').split(' | '), jenis=parts[0], deskripsi=parts[1]||'-', status=parts[2]||'DIAKUI', isVerif=parts[3]==='VERIFIED', isDiakui=status!=='TIDAK_DIAKUI';
                 if(isDiakui) totalJam += jam;
                 
                 // Cek status verifikasi: Kunci Checkbox jika sudah Verified
@@ -2589,7 +2590,7 @@
             const r = mahasiswaReportsData.find(x => String(x.id) === String(id)); if(!r) return;
             document.getElementById('mhs-form-title').innerText = "Edit Laporan Harian"; document.getElementById('mhs-report-id').value = r.id;
             document.getElementById('mhs-jenis').value = (r.rencana || '').split(' | ')[0]; document.getElementById('mhs-deskripsi').value = (r.rencana || '').split(' | ')[1] || '';
-            document.getElementById('mhs-tanggal').value = r.tanggal; document.getElementById('mhs-jam').value = r.keluhan; document.getElementById('mhs-foto').value = r.foto;
+            document.getElementById('mhs-tanggal').value = r.tanggal; document.getElementById('mhs-jam').value = r.jam || r.keluhan || ''; document.getElementById('mhs-foto').value = r.foto;
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
         function updateBulkActionStateMhs() {
@@ -2623,7 +2624,8 @@
             const sortedData = sortData([...data], 'Mhs'), totalPages = Math.ceil(sortedData.length / itemsPerPage), start = (currentPageMhs - 1) * itemsPerPage, pageData = sortedData.slice(start, start + itemsPerPage);
             pageData.forEach(r => {
                 const parts = (r.rencana||'').split(' | '), jenis = parts[0], desk = parts[1]||'', isDiakui = parts[2] !== 'TIDAK_DIAKUI', isVerif = parts[3] === 'VERIFIED';
-                const jamHtml = isDiakui ? `<div class="text-xs text-emerald-600 mt-1 font-medium">Durasi: ${r.keluhan} Jam</div>` : `<div class="text-xs text-red-500 mt-1 line-through">Durasi: ${r.keluhan} Jam</div><div class="text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded inline-block">Ditolak</div>`;
+                const durasiJam = r.jam || r.keluhan || 0;
+                const jamHtml = isDiakui ? `<div class="text-xs text-emerald-600 mt-1 font-medium">Durasi: ${durasiJam} Jam</div>` : `<div class="text-xs text-red-500 mt-1 line-through">Durasi: ${durasiJam} Jam</div><div class="text-[10px] text-red-600 font-bold bg-red-100 px-1.5 py-0.5 rounded inline-block">Ditolak</div>`;
                 const verifHtml = isVerif ? `<div class="text-[10px] text-blue-600 font-bold mt-1 bg-blue-50 px-1.5 py-0.5 rounded inline-block">Terverifikasi</div>` : `<div class="text-[10px] text-gray-400 font-bold mt-1 bg-gray-50 px-1.5 py-0.5 rounded inline-block">Belum Verif</div>`;
                 const fak = (r.fakultas && r.fakultas !== '-') ? r.fakultas : getStudentFakultas(r.username);
                 const fakHtml = fak !== '-' ? `<div class="text-xs text-emerald-700 font-medium mt-0.5 flex items-center"><i class="fa-solid fa-graduation-cap text-[10px] mr-1 text-emerald-600"></i>${fak}</div>` : '<div class="text-xs text-gray-400 italic mt-0.5">Fakultas -</div>';
@@ -2698,7 +2700,8 @@
                     ? `<div class="text-xs text-emerald-700 font-medium mt-0.5 flex items-center"><i class="fa-solid fa-graduation-cap text-[10px] mr-1 text-emerald-600"></i>${fak}</div>`
                     : '<div class="text-xs text-gray-400 italic mt-0.5">Fakultas -</div>';
 
-                tr.innerHTML = `<td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 font-medium text-gray-700"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4"><div><span class="font-semibold text-gray-800">${r.kelompok||'-'}</span></div>${fakHtml}</td><td class="px-6 py-4"><div class="text-sm font-bold">${parts[0]}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${parts[1]||''}</div><div class="text-xs text-emerald-600 mt-1 font-medium">Durasi: ${r.keluhan} Jam</div></td><td class="px-6 py-4 text-center space-x-2"><span class="text-[10px] text-gray-600 font-bold bg-gray-100 px-2 py-1 rounded inline-block mr-2">BELUM VERIF</span><button onclick="openRincianModal('${r.username}')" class="text-blue-500 bg-blue-50 p-2 rounded-full hover:bg-blue-100 transition shadow-sm"><i class="fa-solid fa-user-check"></i></button></td>`;
+                const durasiJam = r.jam || r.keluhan || 0;
+                tr.innerHTML = `<td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 font-medium text-gray-700"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4"><div><span class="font-semibold text-gray-800">${r.kelompok||'-'}</span></div>${fakHtml}</td><td class="px-6 py-4"><div class="text-sm font-bold">${parts[0]}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${parts[1]||''}</div><div class="text-xs text-emerald-600 mt-1 font-medium">Durasi: ${durasiJam} Jam</div></td><td class="px-6 py-4 text-center space-x-2"><span class="text-[10px] text-gray-600 font-bold bg-gray-100 px-2 py-1 rounded inline-block mr-2">BELUM VERIF</span><button onclick="openRincianModal('${r.username}')" class="text-blue-500 bg-blue-50 p-2 rounded-full hover:bg-blue-100 transition shadow-sm"><i class="fa-solid fa-user-check"></i></button></td>`;
                 tbody.appendChild(tr);
             });
             renderPagination('pagination-belum-verif', totalPages, currentPageBelumVerif, 'BelumVerif');
@@ -2730,7 +2733,8 @@
                     ? `<div class="text-xs text-emerald-700 font-medium mt-0.5 flex items-center"><i class="fa-solid fa-graduation-cap text-[10px] mr-1 text-emerald-600"></i>${fak}</div>`
                     : '<div class="text-xs text-gray-400 italic mt-0.5">Fakultas -</div>';
 
-                tr.innerHTML = `<td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 font-medium text-blue-700"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4"><div><span class="font-semibold text-gray-800">${r.kelompok||'-'}</span></div>${fakHtml}</td><td class="px-6 py-4"><div class="text-sm font-bold">${parts[0]}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${parts[1]||''}</div><div class="text-xs text-emerald-600 mt-1 font-medium">Durasi: ${r.keluhan} Jam</div></td><td class="px-6 py-4 text-center space-x-2"><span class="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded inline-block mr-2"><i class="fa-solid fa-check-double"></i> VERIFIED</span><button onclick="openRincianModal('${r.username}')" class="text-gray-500 bg-gray-100 p-2 rounded-full hover:bg-gray-200 transition shadow-sm"><i class="fa-solid fa-user-gear"></i></button></td>`;
+                const durasiJam = r.jam || r.keluhan || 0;
+                tr.innerHTML = `<td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 font-medium text-blue-700"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4"><div><span class="font-semibold text-gray-800">${r.kelompok||'-'}</span></div>${fakHtml}</td><td class="px-6 py-4"><div class="text-sm font-bold">${parts[0]}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${parts[1]||''}</div><div class="text-xs text-emerald-600 mt-1 font-medium">Durasi: ${durasiJam} Jam</div></td><td class="px-6 py-4 text-center space-x-2"><span class="text-[10px] text-blue-600 font-bold bg-blue-50 px-2 py-1 rounded inline-block mr-2"><i class="fa-solid fa-check-double"></i> VERIFIED</span><button onclick="openRincianModal('${r.username}')" class="text-gray-500 bg-gray-100 p-2 rounded-full hover:bg-gray-200 transition shadow-sm"><i class="fa-solid fa-user-gear"></i></button></td>`;
                 tbody.appendChild(tr);
             });
             renderPagination('pagination-verif', totalPages, currentPageVerif, 'Verif');
@@ -2762,7 +2766,8 @@
                     ? `<div class="text-xs text-emerald-700 font-medium mt-0.5 flex items-center"><i class="fa-solid fa-graduation-cap text-[10px] mr-1 text-emerald-600"></i>${fak}</div>`
                     : '<div class="text-xs text-gray-400 italic mt-0.5">Fakultas -</div>';
 
-                tr.innerHTML = `<td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 font-medium text-red-700"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4"><div><span class="font-semibold text-gray-800">${r.kelompok||'-'}</span></div>${fakHtml}</td><td class="px-6 py-4"><div class="text-sm font-bold">${parts[0]}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${parts[1]||''}</div><div class="text-xs text-red-500 mt-1 line-through">Durasi: ${r.keluhan} Jam</div></td><td class="px-6 py-4 text-center space-x-2"><span class="text-[10px] text-red-600 font-bold bg-red-100 px-2 py-1 rounded inline-block mr-2"><i class="fa-solid fa-xmark"></i> DITOLAK</span><button onclick="openRincianModal('${r.username}')" class="text-gray-500 bg-gray-100 p-2 rounded-full hover:bg-gray-200 transition shadow-sm"><i class="fa-solid fa-user-gear"></i></button></td>`;
+                const durasiJam = r.jam || r.keluhan || 0;
+                tr.innerHTML = `<td class="px-6 py-4">${r.tanggal}</td><td class="px-6 py-4 font-medium text-red-700"><div>${r.namaLengkap||r.username}</div><div class="text-xs text-gray-500">@${r.username}</div></td><td class="px-6 py-4"><div><span class="font-semibold text-gray-800">${r.kelompok||'-'}</span></div>${fakHtml}</td><td class="px-6 py-4"><div class="text-sm font-bold">${parts[0]}</div><div class="text-xs text-gray-500 max-w-[200px] truncate">${parts[1]||''}</div><div class="text-xs text-red-500 mt-1 line-through">Durasi: ${durasiJam} Jam</div></td><td class="px-6 py-4 text-center space-x-2"><span class="text-[10px] text-red-600 font-bold bg-red-100 px-2 py-1 rounded inline-block mr-2"><i class="fa-solid fa-xmark"></i> DITOLAK</span><button onclick="openRincianModal('${r.username}')" class="text-gray-500 bg-gray-100 p-2 rounded-full hover:bg-gray-200 transition shadow-sm"><i class="fa-solid fa-user-gear"></i></button></td>`;
                 tbody.appendChild(tr);
             });
             renderPagination('pagination-tolak', totalPages, currentPageTolak, 'Tolak');
@@ -2944,8 +2949,11 @@
             sel.value = klps.includes(cur) ? cur : '';
         }
         function applyAdminRekapFilter() {
-            const filterKlp = document.getElementById('filter-kelompok-rekap')?.value||'', search = document.getElementById('search-rekap')?.value.toLowerCase()||'';
+            const filterFak = document.getElementById('filter-fakultas-rekap')?.value || '';
+            const filterKlp = document.getElementById('filter-kelompok-rekap')?.value || '';
+            const search = document.getElementById('search-rekap')?.value.toLowerCase() || '';
             let mhsList = getActiveAccounts().filter(a => a.role === 'mahasiswa');
+            if(filterFak) mhsList = mhsList.filter(m => getStudentFakultas(m.username) === filterFak);
             if(filterKlp) mhsList = mhsList.filter(m => m.kelompok === filterKlp);
             if(search) mhsList = mhsList.filter(m => (m.namaLengkap||'').toLowerCase().includes(search) || (m.username||'').toLowerCase().includes(search));
             
@@ -2953,7 +2961,7 @@
             const jamMap = {};
             activeReports.forEach(r => { 
                 if(!jamMap[r.username]) jamMap[r.username]=0; 
-                if((r.rencana||'').split(' | ')[2]!=='TIDAK_DIAKUI') jamMap[r.username]+=Number(r.keluhan||0); 
+                if((r.rencana||'').split(' | ')[2]!=='TIDAK_DIAKUI') jamMap[r.username]+=Number(r.jam || r.keluhan || 0); 
             });
             
             let rekapData = mhsList.map(m => { 
@@ -2989,16 +2997,18 @@
 
         // Fungsi Ekspor Excel (CSV dengan UTF-8 BOM untuk Excel)
         function downloadRekapExcel() {
+            const filterFak = document.getElementById('filter-fakultas-rekap')?.value || '';
             const filterKlp = document.getElementById('filter-kelompok-rekap')?.value || '';
             const search = document.getElementById('search-rekap')?.value.toLowerCase() || '';
             let mhsList = getActiveAccounts().filter(a => a.role === 'mahasiswa');
+            if (filterFak) mhsList = mhsList.filter(m => getStudentFakultas(m.username) === filterFak);
             if (filterKlp) mhsList = mhsList.filter(m => m.kelompok === filterKlp);
             if (search) mhsList = mhsList.filter(m => (m.namaLengkap || '').toLowerCase().includes(search) || (m.username || '').toLowerCase().includes(search));
 
             const jamMap = {};
             getActiveReports().forEach(r => {
                 if (!jamMap[r.username]) jamMap[r.username] = 0;
-                if ((r.rencana || '').split(' | ')[2] !== 'TIDAK_DIAKUI') jamMap[r.username] += Number(r.keluhan || 0);
+                if ((r.rencana || '').split(' | ')[2] !== 'TIDAK_DIAKUI') jamMap[r.username] += Number(r.jam || r.keluhan || 0);
             });
 
             let csvContent = "\uFEFFNo,NIM,Nama Mahasiswa,Username,Kelompok,Fakultas,Total Jam,Persentase (Target 181 Jam),Status Capaian\n";
