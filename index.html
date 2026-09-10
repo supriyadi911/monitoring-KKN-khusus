@@ -1514,60 +1514,45 @@
                     }
                 }
 
-                // 2. Ambil data terbaru dari GAS secara diam-diam (Background Sync)
+                // 2. Ambil seluruh data dari GAS (Satu Pintu / Single Payload Tercepat)
                 const _t = new Date().getTime();
-                const [res1, res2] = await Promise.allSettled([
-                    fetch(`${SCRIPT_URL}?action=getMahasiswaReports&_t=${_t}`, { cache: 'no-store' }),
-                    fetch(`${SCRIPT_URL}?action=getAccounts&_t=${_t}`, { cache: 'no-store' })
-                ]);
+                const response = await fetch(`${SCRIPT_URL}?action=getAllData&_t=${_t}`, {
+                    method: 'GET',
+                    redirect: 'follow'
+                });
+
+                if (!response.ok) throw new Error("Jaringan bermasalah atau terblokir");
+
+                const text = await response.text();
                 
-                let loadedAny = false;
-
-                // Proses data Laporan Mahasiswa
-                if (res1.status === 'fulfilled') {
-                    try {
-                        const text1 = await res1.value.text();
-                        if (text1.trim().startsWith('{') || text1.trim().startsWith('[')) {
-                            const data1 = JSON.parse(text1);
-                            if (data1.success && Array.isArray(data1.reports)) {
-                                mahasiswaReportsData = data1.reports;
-                                safeSaveToCache('kkn_reports', mahasiswaReportsData);
-                                loadedAny = true;
-                            }
-                        }
-                    } catch (err1) {
-                        console.warn("Gagal memproses data laporan:", err1);
+                // Pastikan respon dari Google adalah JSON (bukan HTML redirect login)
+                if (text.trim().startsWith('{') || text.trim().startsWith('[')) {
+                    const data = JSON.parse(text);
+                    
+                    if (data.success && data.reports && data.accounts) {
+                        mahasiswaReportsData = data.reports;
+                        accountsData = data.accounts;
+                        
+                        safeSaveToCache('kkn_reports', mahasiswaReportsData);
+                        safeSaveToCache('kkn_accounts', accountsData);
+                        
+                        rebuildAccountsIndex();
+                        renderBasedOnRole();
+                        setConnectionStatus('online'); // Sukses Terhubung
+                    } else {
+                        console.warn("Format data tidak sesuai dari server:", data);
+                        setConnectionStatus('offline');
                     }
-                }
-
-                // Proses data Akun Pengguna
-                if (res2.status === 'fulfilled') {
-                    try {
-                        const text2 = await res2.value.text();
-                        if (text2.trim().startsWith('{') || text2.trim().startsWith('[')) {
-                            const data2 = JSON.parse(text2);
-                            if (data2.success && Array.isArray(data2.accounts)) {
-                                accountsData = data2.accounts;
-                                safeSaveToCache('kkn_accounts', accountsData);
-                                loadedAny = true;
-                            }
-                        }
-                    } catch (err2) {
-                        console.warn("Gagal memproses data akun:", err2);
-                    }
-                }
-
-                rebuildAccountsIndex();
-                renderBasedOnRole();
-
-                if (loadedAny) {
-                    setConnectionStatus('online');
                 } else {
+                    console.warn("Respon dari Google bukan JSON (Bisa jadi akses Google Sheet belum di set 'Anyone'):", text.substring(0, 150));
                     setConnectionStatus('offline');
                 }
+
             } catch (error) {
                 console.warn("Gagal memuat data dari GAS:", error.message || error);
                 setConnectionStatus('offline');
+                
+                // Tetap render UI jika ada cache lokal
                 if (mahasiswaReportsData.length > 0 || accountsData.length > 0) {
                     try { renderBasedOnRole(); } catch(e) {}
                 }
