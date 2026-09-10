@@ -35,22 +35,24 @@
             .text-2xl { font-size: 1.25rem !important; line-height: 1.75rem !important; }
         }
 
-        /* Penjebol Container Website Utama (WordPress/Elementor) - Full Width */
-        .breakout-full-width {
-            width: 100vw !important;
-            position: relative;
-            left: 50%;
-            right: 50%;
-            margin-left: -50vw !important;
-            margin-right: -50vw !important;
-            max-width: none !important;
+        /* Tata letak penuh yang aman dan konsisten di seluruh perangkat */
+        html, body {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            overflow-x: hidden;
         }
 
-        /* Mencegah munculnya scrollbar horizontal di bawah layar */
-        body { overflow-x: hidden; }
+        .header-full-width {
+            width: 100% !important;
+            max-width: 100% !important;
+            left: 0 !important;
+            margin-left: 0 !important;
+            margin-right: 0 !important;
+        }
     </style>
 </head>
-<body class="text-gray-800 overflow-x-hidden">
+<body class="text-gray-800 bg-gray-50 flex flex-col h-screen overflow-x-hidden">
 
     <!-- ==============================
          SPLASH SCREEN
@@ -76,9 +78,9 @@
         <p class="mt-4 text-emerald-800 font-bold tracking-wide drop-shadow-sm text-lg animate-pulse">Menyegarkan Data...</p>
     </div>
 
-    <!-- Navbar (Full-Width Breakout) -->
-    <nav class="bg-emerald-700 text-white shadow-md z-10 sticky top-0 hidden breakout-full-width" id="navbar">
-        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+    <!-- Navbar (Edge-to-Edge Full Width) -->
+    <nav class="w-full bg-emerald-700 text-white shadow-md z-30 sticky top-0 hidden flex-shrink-0 header-full-width" id="navbar">
+        <div class="w-full px-3 sm:px-6 lg:px-8">
             <div class="flex justify-between h-14 sm:h-16 items-center">
                 <div class="flex-shrink-0 flex items-center font-bold text-lg sm:text-xl">
                     <!-- Tombol Toggle Sidebar -->
@@ -105,15 +107,15 @@
         </div>
         
         <!-- Running Text Warning -->
-        <div class="bg-red-600 text-white text-sm py-1.5 w-full marquee-container border-t border-red-700 shadow-inner">
+        <div class="bg-red-600 text-white text-xs sm:text-sm py-1.5 w-full marquee-container border-t border-red-700 shadow-inner">
             <div class="animate-marquee font-medium tracking-wide">
                 <i class="fa-solid fa-triangle-exclamation mr-1 text-yellow-300"></i> <span class="text-yellow-300 font-bold mr-1">PERHATIAN PENTING:</span> Pastikan seluruh tautan (link) berkas Google Drive yang dilampirkan telah diatur hak akses berbaginya menjadi <span class="bg-red-800 px-2 py-0.5 rounded mx-1 shadow-sm">"Siapa saja yang memiliki tautan" (Anyone with the link)</span>. Berkas yang dikunci/dibatasi (Restricted) tidak dapat dibuka dan dinilai oleh Admin.
             </div>
         </div>
     </nav>
 
-    <!-- Main Container (Full-Width Breakout) -->
-    <main class="w-full h-screen flex flex-col overflow-hidden bg-gray-50 breakout-full-width">
+    <!-- Main Container -->
+    <main class="w-full flex-1 flex flex-col min-h-0 overflow-hidden bg-gray-50">
         
         <!-- ==============================
              0. PUBLIC DASHBOARD (LANDING PAGE)
@@ -1402,9 +1404,7 @@
             }
         });
 
-        function _decodeUrl(arr) { return String.fromCharCode(...arr); }
-        const _secureUrl = [104,116,116,112,115,58,47,47,115,99,114,105,112,116,46,103,111,111,103,108,101,46,99,111,109,47,109,97,99,114,111,115,47,115,47,65,75,102,121,99,98,121,95,82,70,111,109,108,103,103,89,117,50,85,109,101,81,102,69,55,119,77,50,83,82,97,88,81,74,73,51,113,71,109,98,69,74,68,73,88,78,107,110,84,50,97,70,45,75,106,97,117,51,50,76,90,98,103,76,54,76,67,79,57,66,69,53,76,103,47,101,120,101,99];
-        const SCRIPT_URL = _decodeUrl(_secureUrl); 
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbz_VRcf7uBLgvuwim1Ekg2Uzt1ELBib4lyyY0hfuGmcsPBHdfQ5Qox6EaEfMPAXJ6uugg/exec'; 
         const USE_MOCK = false; 
 
         // Fungsi aman untuk menyimpan ke LocalStorage (mencegah error QuotaExceeded)
@@ -1516,37 +1516,55 @@
 
                 // 2. Ambil data terbaru dari GAS secara diam-diam (Background Sync)
                 const _t = new Date().getTime();
-                const [res1, res2] = await Promise.all([
+                const [res1, res2] = await Promise.allSettled([
                     fetch(`${SCRIPT_URL}?action=getMahasiswaReports&_t=${_t}`, { cache: 'no-store' }),
                     fetch(`${SCRIPT_URL}?action=getAccounts&_t=${_t}`, { cache: 'no-store' })
                 ]);
                 
-                // Ambil respons mentah sebagai teks untuk validasi sebelum diparsing
-                const text1 = await res1.text();
-                const text2 = await res2.text();
+                let loadedAny = false;
 
-                const isJson1 = text1.trim().startsWith('{') || text1.trim().startsWith('[');
-                const isJson2 = text2.trim().startsWith('{') || text2.trim().startsWith('[');
-
-                if (!isJson1 || !isJson2) {
-                    console.warn("Respon dari server bukan format JSON (kemungkinan Google Apps Script sedang sibuk atau dicegat jaringan). Menggunakan data cache yang tersedia.");
-                    setConnectionStatus('offline');
-                    return;
+                // Proses data Laporan Mahasiswa
+                if (res1.status === 'fulfilled') {
+                    try {
+                        const text1 = await res1.value.text();
+                        if (text1.trim().startsWith('{') || text1.trim().startsWith('[')) {
+                            const data1 = JSON.parse(text1);
+                            if (data1.success && Array.isArray(data1.reports)) {
+                                mahasiswaReportsData = data1.reports;
+                                safeSaveToCache('kkn_reports', mahasiswaReportsData);
+                                loadedAny = true;
+                            }
+                        }
+                    } catch (err1) {
+                        console.warn("Gagal memproses data laporan:", err1);
+                    }
                 }
 
-                const data1 = JSON.parse(text1);
-                const data2 = JSON.parse(text2);
-                
-                mahasiswaReportsData = data1.reports || [];
-                accountsData = data2.accounts || []; 
-                rebuildAccountsIndex();
-                
-                // Simpan ke Cache dengan aman
-                safeSaveToCache('kkn_reports', mahasiswaReportsData);
-                safeSaveToCache('kkn_accounts', accountsData);
+                // Proses data Akun Pengguna
+                if (res2.status === 'fulfilled') {
+                    try {
+                        const text2 = await res2.value.text();
+                        if (text2.trim().startsWith('{') || text2.trim().startsWith('[')) {
+                            const data2 = JSON.parse(text2);
+                            if (data2.success && Array.isArray(data2.accounts)) {
+                                accountsData = data2.accounts;
+                                safeSaveToCache('kkn_accounts', accountsData);
+                                loadedAny = true;
+                            }
+                        }
+                    } catch (err2) {
+                        console.warn("Gagal memproses data akun:", err2);
+                    }
+                }
 
+                rebuildAccountsIndex();
                 renderBasedOnRole();
-                setConnectionStatus('online');
+
+                if (loadedAny) {
+                    setConnectionStatus('online');
+                } else {
+                    setConnectionStatus('offline');
+                }
             } catch (error) {
                 console.warn("Gagal memuat data dari GAS:", error.message || error);
                 setConnectionStatus('offline');
@@ -1565,7 +1583,6 @@
             await loadDataFromServer(true);
             
             if (btn) { btn.classList.remove('animate-spin'); btn.disabled = false; }
-            alert("Data berhasil disinkronkan dengan Spreadsheet!");
         }
 
         // Helper Eksekusi Post ke GAS dengan proteksi teks HTML
